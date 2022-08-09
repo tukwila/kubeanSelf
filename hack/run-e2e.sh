@@ -31,14 +31,25 @@ vm_clean_up(){
 }
 
 trap vm_clean_up EXIT
-vagrant init Kiowa/kubean-e2e-vm-template --box-version 0
-sed -i "$ i\  config.vm.network \"public_network\", ip: \"${vm_ip_addr1}\", bridge: \"ens192\"" Vagrantfile
+# create single node for cluster
+sed -i "s/default_ip/${vm_ip_addr1}/" Vagrantfile
+sed -i "s/default2_ip/${vm_ip_addr2}/" Vagrantfile
 vagrant up
 vagrant status
-ping -c 5 ${vm_ip_addr1}
+ATTEMPTS=0
+pingOK=0
+ping -w 2 -c 1 $vm_ip_addr1|grep "0%" && pingOK=true || pingOK=false
+until [ "${pingOK}" == "false" ] || [ $ATTEMPTS -eq 10 ]; do
+ping -w 2 -c 1 $vm_ip_addr1|grep "0%" && pingOK=true || pingOK=false
+echo "ping "$vm_ip_addr1 $pingOK
+ATTEMPTS=$((ATTEMPTS + 1))
+sleep 10
+done
+
 sshpass -p root ssh root@${vm_ip_addr1} cat /proc/version
+ping -c 5 ${vm_ip_addr2}
 # print vm origin hostname
-echo "before deploy display hostname: "
+echo "before deploy display single node hostname: "
 sshpass -p root ssh root@${vm_ip_addr1} hostname
 
 # prepare kubean install job yml using containerd
