@@ -16,7 +16,7 @@ KUBECONFIG_PATH=${KUBECONFIG_PATH:-"${HOME}/.kube"}
 HOST_CLUSTER_NAME=${1:-"kubean-host"}
 SPRAY_JOB_VERSION=${2:-latest}
 vm_ip_addr1=${3:-"10.6.127.33"}
-vm_ip_addr2=${3:-"10.6.127.33"}
+vm_ip_addr2=${4:-"10.6.127.33"}
 MAIN_KUBECONFIG=${MAIN_KUBECONFIG:-"${KUBECONFIG_PATH}/${HOST_CLUSTER_NAME}.config"}
 EXIT_CODE=0
 echo "currnent dir: "$(pwd)
