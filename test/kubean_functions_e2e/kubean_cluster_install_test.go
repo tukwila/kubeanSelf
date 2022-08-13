@@ -105,6 +105,22 @@ var _ = ginkgo.Describe("e2e test cluster operation", func() {
 		})
 
 	})
+	// sonobuoy run --sonobuoy-image docker.m.daocloud.io/sonobuoy/sonobuoy:v0.56.7 --plugin-env e2e.E2E_FOCUS=pods --plugin-env e2e.E2E_DRYRUN=true --wait
+	ginkgo.Context("do sonobuoy checking ", func() {
+		cmd := exec.Command("sonobuoy", "run", "--sonobuoy-image", "docker.m.daocloud.io/sonobuoy/sonobuoy:v0.56.7", "--plugin-env", "e2e.E2E_FOCUS=pods", "--plugin-env", "e2e.E2E_DRYRUN=true", "--wait")
+		ginkgo.GinkgoWriter.Printf("sonobuoy cmd: %s\n", cmd.String())
+		var out, stderr bytes.Buffer
+		cmd.Stdout = &out
+		cmd.Stderr = &stderr
+		if err := cmd.Run(); err != nil {
+			ginkgo.GinkgoWriter.Printf("apply cmd error: %s\n", err.Error())
+			gomega.ExpectWithOffset(2, err).NotTo(gomega.HaveOccurred(), stderr.String())
+		}
+		ginkgo.It("sonobuoy execution result", func() {
+			gomega.Expect(out.String()).Should(gomega.ContainSubstring("Pass"))
+		})
+
+	})
 
 	ginkgo.Context("when install nginx service", func() {
 		config, err = clientcmd.BuildConfigFromFlags("", localKubeConfigPath)

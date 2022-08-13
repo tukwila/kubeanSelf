@@ -51,6 +51,8 @@ ping -c 5 ${vm_ip_addr2}
 # print vm origin hostname
 echo "before deploy display single node hostname: "
 sshpass -p root ssh root@${vm_ip_addr1} hostname
+# scp sonobuoy_0.56.9_linux_amd64.tar.gz to master
+scp $(pwd)/test/tools/sonobuoy_0.56.9_linux_amd64.tar.gz root@$vm_ip_addr1:/root/
 
 # prepare kubean install job yml using containerd
 SPRAY_JOB="ghcr.io/kubean-io/kubean/spray-job:${SPRAY_JOB_VERSION}"
