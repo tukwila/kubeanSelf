@@ -19,7 +19,7 @@ vm_ip_addr1=${3:-"10.6.127.33"}
 vm_ip_addr2=${4:-"10.6.127.33"}
 MAIN_KUBECONFIG=${MAIN_KUBECONFIG:-"${KUBECONFIG_PATH}/${HOST_CLUSTER_NAME}.config"}
 EXIT_CODE=0
-echo "currnent dir: "$(pwd)
+echo "==> currnent dir: "$(pwd)
 # Install ginkgo
 GOPATH=$(go env GOPATH | awk -F ':' '{print $1}')
 export PATH=$PATH:$GOPATH/bin
@@ -41,7 +41,7 @@ pingOK=0
 ping -w 2 -c 1 $vm_ip_addr1|grep "0%" && pingOK=true || pingOK=false
 until [ "${pingOK}" == "false" ] || [ $ATTEMPTS -eq 10 ]; do
 ping -w 2 -c 1 $vm_ip_addr1|grep "0%" && pingOK=true || pingOK=false
-echo "ping "$vm_ip_addr1 $pingOK
+echo "==> ping "$vm_ip_addr1 $pingOK
 ATTEMPTS=$((ATTEMPTS + 1))
 sleep 10
 done
@@ -49,10 +49,10 @@ done
 sshpass -p root ssh root@${vm_ip_addr1} cat /proc/version
 ping -c 5 ${vm_ip_addr2}
 # print vm origin hostname
-echo "before deploy display single node hostname: "
+echo "==> before deploy display single node hostname: "
 sshpass -p root ssh root@${vm_ip_addr1} hostname
-# scp sonobuoy_0.56.9_linux_amd64.tar.gz to master
-scp $(pwd)/test/tools/sonobuoy_0.56.9_linux_amd64.tar.gz root@$vm_ip_addr1:/root/
+echo "==> scp sonobuoy to master: "
+sshpass -p root scp $(pwd)/test/tools/sonobuoy_0.56.9_linux_amd64.tar.gz root@$vm_ip_addr1:/root/
 
 # prepare kubean install job yml using containerd
 SPRAY_JOB="ghcr.io/kubean-io/kubean/spray-job:${SPRAY_JOB_VERSION}"
