@@ -116,6 +116,11 @@ var _ = ginkgo.Describe("e2e test cluster operation", func() {
 			ginkgo.GinkgoWriter.Printf("apply cmd error: %s\n", err.Error())
 			gomega.ExpectWithOffset(2, err).NotTo(gomega.HaveOccurred(), stderr.String())
 		}
+		cmd = exec.Command("sonobuoy", "status")
+		ginkgo.GinkgoWriter.Printf("sonobuoy cmd: %s\n", cmd.String())
+		cmd.Stdout = &out
+		cmd.Stderr = &stderr
+		ginkgo.GinkgoWriter.Printf("sonobuoy result: %s\n", out.String(), stderr.String())
 		ginkgo.It("sonobuoy execution result", func() {
 			gomega.Expect(out.String()).Should(gomega.ContainSubstring("Pass"))
 		})
