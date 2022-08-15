@@ -19,8 +19,6 @@ RUNNER_NAME=${6:-"kubean-actions-runner1"}
 EXIT_CODE=0
 
 CLUSTER_PREFIX=kubean-"${IMAGE_VERSION}"-$RANDOM
-export CLUSTER_PREFIX
-export
 
 local_helm_repo_alias="kubean_release"
 # add kubean repo locally
@@ -37,6 +35,7 @@ helm repo list
 chmod +x ./hack/delete-cluster.sh
 chmod +x ./hack/local-up-kindcluster.sh
 chmod +x ./hack/run-e2e.sh
+chmod +x ./hack/run-sonobouy-e2e.sh
 
 ###### Clean Up #######
 echo "======= cluster prefix: ${CLUSTER_PREFIX}"
@@ -55,19 +54,25 @@ clean_up(){
 ###### to get k8 cluster single node ip address based on actions-runner #######
 echo "RUNNER_NAME: "$RUNNER_NAME
 if [ "${RUNNER_NAME}" == "kubean-actions-runner1" ]; then
-    vm_ip_addr="10.6.127.33"
+    vm_ip_addr1="10.6.127.33"
+    vm_ip_addr2="10.6.127.36"
 fi
 if [ "${RUNNER_NAME}" == "kubean-actions-runner2" ]; then
     vm_ip_addr="10.6.127.35"
+    vm_ip_addr2="10.6.127.37"
 fi
 if [ "${RUNNER_NAME}" == "debug" ]; then
-    vm_ip_addr="10.6.127.41"
+    vm_ip_addr1="10.6.127.41"
+    vm_ip_addr2="10.6.127.42"
 fi
 
 ###### e2e logic ########
 # trap clean_up EXIT
 ./hack/local-up-kindcluster.sh "${TARGET_VERSION}" "${IMAGE_VERSION}" "${HELM_REPO}" "${IMG_REPO}" "kindest/node:v1.21.1" "${CLUSTER_PREFIX}"-host
-./hack/run-e2e.sh "${CLUSTER_PREFIX}"-host $SPRAY_JOB_VERSION $vm_ip_addr
+sleep 100
+./hack/run-e2e.sh "${CLUSTER_PREFIX}"-host $SPRAY_JOB_VERSION $vm_ip_addr1
+sleep 100
+./hack/run-sonobouy-e2e.sh "${CLUSTER_PREFIX}"-host $SPRAY_JOB_VERSION $vm_ip_addr1 $vm_ip_addr2
 
 ret=$?
 if [ ${ret} -ne 0 ]; then

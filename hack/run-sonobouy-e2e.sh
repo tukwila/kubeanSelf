@@ -27,6 +27,7 @@ export PATH=$PATH:$GOPATH/bin
 # prepare vagrant vm as k8 cluster single node
 vm_clean_up(){
     vagrant destroy -f default
+    vagrant destroy -f default2
     exit $EXIT_CODE
 }
 
