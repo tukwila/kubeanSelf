@@ -32,6 +32,7 @@ vm_clean_up(){
 
 trap vm_clean_up EXIT
 # create single node for cluster
+cp $(pwd)/hack/Vagrantfile $(pwd)/
 sed -i "s/default_ip/${vm_ip_addr1}/" Vagrantfile
 sed -i "s/default2_ip/${vm_ip_addr2}/" Vagrantfile
 vagrant up
@@ -62,4 +63,4 @@ sed -i "s#  \"10.6.170.10:5000\": \"http://10.6.170.10:5000\"#   - 10.6.170.10:5
 
 # Run nightly e2e
 ginkgo -v -race --fail-fast ./test/kubean_deploy_e2e/  -- --kubeconfig="${MAIN_KUBECONFIG}"
-ginkgo -v -race --fail-fast ./test/kubean_sonobouy_e2e/  -- --kubeconfig="${MAIN_KUBECONFIG}" --vmipaddr="${vm_ip_addr1}" --Workeripaddr="${vm_ip_addr2}"
+ginkgo -v -race --fail-fast ./test/kubean_sonobouy_e2e/  -- --kubeconfig="${MAIN_KUBECONFIG}" --vmipaddr="${vm_ip_addr1}"
