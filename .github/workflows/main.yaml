@@ -38,16 +38,16 @@ jobs:
     permissions:
       packages: write
       contents: read
-        steps:
-          - uses: actions/checkout@v3
-            with:
-              fetch-depth: 0
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
-          - uses: actions/setup-go@v3
-            with:
-              go-version: 1.18.2
+      - uses: actions/setup-go@v3
+          with:
+            go-version: 1.18.2
 
-          - name: e2e
-            run: |
-              echo ${{ runner.name }}
-              bash hack/sonobouy_e2e.sh "" "" "https://kubean-io.github.io/kubean-helm-chart/" "ghcr.io/kubean-io/kubean" "" ${{ runner.name }}
+      - name: e2e
+          run: |
+            echo ${{ runner.name }}
+            bash hack/sonobouy_e2e.sh "" "" "https://kubean-io.github.io/kubean-helm-chart/" "ghcr.io/kubean-io/kubean" "" ${{ runner.name }}
