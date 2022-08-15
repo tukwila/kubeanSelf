@@ -100,7 +100,7 @@ var _ = ginkgo.Describe("e2e test cluster operation", func() {
 	// sonobuoy run --sonobuoy-image docker.m.daocloud.io/sonobuoy/sonobuoy:v0.56.7 --plugin-env e2e.E2E_FOCUS=pods --plugin-env e2e.E2E_DRYRUN=true --wait
 	ginkgo.Context("do sonobuoy checking ", func() {
 		masterSSH := fmt.Sprintf("root@%s", tools.Vmipaddr)
-		cmd := exec.Command("sshpass", "-p", "root", "ssh", masterSSH, "sonobuoy", "run", "--sonobuoy-image", "docker.m.daocloud.io/sonobuoy/sonobuoy:v0.56.7", "--plugin-env", "e2e.E2E_FOCUS=pods", "--plugin-env", "e2e.E2E_DRYRUN=true", "--wait")
+		cmd := exec.Command("sshpass", "-p", "root", "ssh", masterSSH, "sonobuoy", "run", "--sonobuoy-image", "10.6.170.10:5000/sonobuoy/sonobuoy:v0.56.7", "--plugin-env", "e2e.E2E_FOCUS=pods", "--plugin-env", "e2e.E2E_DRYRUN=true", "--wait")
 		ginkgo.GinkgoWriter.Printf("sonobuoy cmd: %s\n", cmd.String())
 		var out, stderr bytes.Buffer
 		cmd.Stdout = &out
