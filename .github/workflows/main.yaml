@@ -34,6 +34,7 @@ jobs:
           echo ${{ github.workspace }}
           bash hack/e2e.sh "" "" "https://kubean-io.github.io/kubean-helm-chart/" "ghcr.io/kubean-io/kubean" "" ${{ runner.name }}
   sonobouy_e2e:
+    needs: e2e
     runs-on: self-hosted
     permissions:
       packages: write
