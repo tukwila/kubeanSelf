@@ -8,9 +8,16 @@ data:
     all:
       hosts:
         node1:
-          ip:
-          access_ip:
-          ansible_host:
+          ip: vm_ip_addr1
+          access_ip: vm_ip_addr1
+          ansible_host: vm_ip_addr1
+          ansible_connection: ssh
+          ansible_user: root
+          ansible_ssh_pass: root
+        node2:
+          ip: vm_ip_addr2
+          access_ip: vm_ip_addr2
+          ansible_host: vm_ip_addr2
           ansible_connection: ssh
           ansible_user: root
           ansible_ssh_pass: root
@@ -21,6 +28,7 @@ data:
         kube_node:
           hosts:
             node1:
+            node2:
         etcd:
           hosts:
             node1:
