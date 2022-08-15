@@ -30,8 +30,8 @@ vm_clean_up(){
     exit $EXIT_CODE
 }
 
-trap vm_clean_up EXIT
-# create single node for cluster
+#trap vm_clean_up EXIT
+# create 1master+1worker cluster
 cp $(pwd)/hack/Vagrantfile $(pwd)/
 sed -i "s/default_ip/${vm_ip_addr1}/" Vagrantfile
 sed -i "s/default2_ip/${vm_ip_addr2}/" Vagrantfile
