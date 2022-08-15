@@ -10,32 +10,35 @@ set -e
 #[HELM_REPO](optional) the helm chart repo to be pulled from
 #
 
-TARGET_VERSION=${1:-v0.0.0}
-IMAGE_VERSION=${2:-latest}
-HELM_REPO=${3:-"https://kubean-io.github.io/kubean-helm-chart"}
-IMG_REPO=${4:-"ghcr.io/kubean-io/kubean"}
-SPRAY_JOB_VERSION=${5:-latest}
-RUNNER_NAME=${6:-"kubean-actions-runner1"} 
-EXIT_CODE=0
+# wait for actions-runner restore
+sleep 100
 
-CLUSTER_PREFIX=kubean-"${IMAGE_VERSION}"-$RANDOM
+# TARGET_VERSION=${1:-v0.0.0}
+# IMAGE_VERSION=${2:-latest}
+# HELM_REPO=${3:-"https://kubean-io.github.io/kubean-helm-chart"}
+# IMG_REPO=${4:-"ghcr.io/kubean-io/kubean"}
+# SPRAY_JOB_VERSION=${5:-latest}
+# RUNNER_NAME=${6:-"kubean-actions-runner1"} 
+# EXIT_CODE=0
 
-local_helm_repo_alias="kubean_release"
+# CLUSTER_PREFIX=kubean-"${IMAGE_VERSION}"-$RANDOM
+
+# local_helm_repo_alias="kubean_release"
 # add kubean repo locally
-repoCount=$(helm repo list | grep "${local_helm_repo_alias}" && repoCount=true || repoCount=false)
-if [ "$repoCount" == "true" ]; then
-    helm repo remove ${local_helm_repo_alias}
-else
-    echo "repoCount:" $repoCount
-fi
-helm repo add ${local_helm_repo_alias} ${HELM_REPO}
-helm repo update
-helm repo list
+# repoCount=$(helm repo list | grep "${local_helm_repo_alias}" && repoCount=true || repoCount=false)
+# if [ "$repoCount" == "true" ]; then
+#     helm repo remove ${local_helm_repo_alias}
+# else
+#     echo "repoCount:" $repoCount
+# fi
+# helm repo add ${local_helm_repo_alias} ${HELM_REPO}
+# helm repo update
+# helm repo list
 
 chmod +x ./hack/run-sonobouy-e2e.sh
 
 ###### Clean Up #######
-echo "======= cluster prefix: ${CLUSTER_PREFIX}"
+echo "======= sonobouy cluster prefix: ${CLUSTER_PREFIX}"
 
 clean_up(){
     local auto_cleanup="true"
@@ -65,7 +68,7 @@ fi
 
 ###### e2e logic ########
 #trap clean_up EXIT
-./hack/local-up-kindcluster.sh "${TARGET_VERSION}" "${IMAGE_VERSION}" "${HELM_REPO}" "${IMG_REPO}" "kindest/node:v1.21.1" "${CLUSTER_PREFIX}"-host
+#./hack/local-up-kindcluster.sh "${TARGET_VERSION}" "${IMAGE_VERSION}" "${HELM_REPO}" "${IMG_REPO}" "kindest/node:v1.21.1" "${CLUSTER_PREFIX}"-host
 ./hack/run-sonobouy-e2e.sh "${CLUSTER_PREFIX}"-host $SPRAY_JOB_VERSION $vm_ip_addr1 $vm_ip_addr2
 
 ret=$?

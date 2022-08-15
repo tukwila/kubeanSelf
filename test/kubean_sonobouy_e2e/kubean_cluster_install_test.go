@@ -24,6 +24,7 @@ var _ = ginkgo.Describe("e2e test cluster operation", func() {
 	gomega.ExpectWithOffset(2, err).NotTo(gomega.HaveOccurred(), "failed build config")
 	kubeClient, err := kubernetes.NewForConfig(config)
 	gomega.ExpectWithOffset(2, err).NotTo(gomega.HaveOccurred(), "failed new client set")
+	localKubeConfigPath := "e2e-cluster1-install-sonobouy"
 
 	defer ginkgo.GinkgoRecover()
 
@@ -32,7 +33,6 @@ var _ = ginkgo.Describe("e2e test cluster operation", func() {
 		clusterInstallYamlsPath := "e2e-install-cluster-sonobouy"
 		kubeanNamespace := "kubean-system"
 		kubeanClusterOpsName := "e2e-cluster1-install-sonobouy"
-		localKubeConfigPath := "e2e-cluster1-install-sonobouy"
 
 		// Create yaml for kuBean CR and related configuration
 		installYamlPath := fmt.Sprint(tools.GetKuBeanPath(), clusterInstallYamlsPath)
@@ -83,16 +83,21 @@ var _ = ginkgo.Describe("e2e test cluster operation", func() {
 		err1 := os.WriteFile(localKubeConfigPath, []byte(cluster1CF.Data["config"]), 0666)
 		gomega.ExpectWithOffset(2, err1).NotTo(gomega.HaveOccurred(), "failed to write localKubeConfigPath")
 
-		// check kube-system pod status
-		ginkgo.Context("When fetching kube-system pods status", func() {
-			podList, err := kubeClient.CoreV1().Pods("kube-system").List(context.TODO(), metav1.ListOptions{})
-			gomega.ExpectWithOffset(2, err).NotTo(gomega.HaveOccurred(), "failed to check kube-system pod status")
-			ginkgo.It("every pod should be in running status", func() {
-				for _, pod := range podList.Items {
-					fmt.Println(pod.Name, string(pod.Status.Phase))
-					gomega.Expect(string(pod.Status.Phase)).To(gomega.Equal("Running"))
-				}
-			})
+	})
+	// check kube-system pod status
+	ginkgo.Context("When fetching 1master+1worker kube-system pods status", func() {
+		config, err = clientcmd.BuildConfigFromFlags("", localKubeConfigPath)
+		gomega.ExpectWithOffset(2, err).NotTo(gomega.HaveOccurred(), "failed build config")
+		kubeClient, err = kubernetes.NewForConfig(config)
+		gomega.ExpectWithOffset(2, err).NotTo(gomega.HaveOccurred(), "failed new client set")
+
+		podList, err := kubeClient.CoreV1().Pods("kube-system").List(context.TODO(), metav1.ListOptions{})
+		gomega.ExpectWithOffset(2, err).NotTo(gomega.HaveOccurred(), "failed to check kube-system pod status")
+		ginkgo.It("every pod in 1master+1worker cluster should be in running status", func() {
+			for _, pod := range podList.Items {
+				fmt.Println(pod.Name, string(pod.Status.Phase))
+				gomega.Expect(string(pod.Status.Phase)).To(gomega.Equal("Running"))
+			}
 		})
 
 	})

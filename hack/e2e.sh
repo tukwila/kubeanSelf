@@ -19,6 +19,8 @@ RUNNER_NAME=${6:-"kubean-actions-runner1"}
 EXIT_CODE=0
 
 CLUSTER_PREFIX=kubean-"${IMAGE_VERSION}"-$RANDOM
+export CLUSTER_PREFIX
+export
 
 local_helm_repo_alias="kubean_release"
 # add kubean repo locally
@@ -63,7 +65,7 @@ if [ "${RUNNER_NAME}" == "debug" ]; then
 fi
 
 ###### e2e logic ########
-trap clean_up EXIT
+# trap clean_up EXIT
 ./hack/local-up-kindcluster.sh "${TARGET_VERSION}" "${IMAGE_VERSION}" "${HELM_REPO}" "${IMG_REPO}" "kindest/node:v1.21.1" "${CLUSTER_PREFIX}"-host
 ./hack/run-e2e.sh "${CLUSTER_PREFIX}"-host $SPRAY_JOB_VERSION $vm_ip_addr
 
