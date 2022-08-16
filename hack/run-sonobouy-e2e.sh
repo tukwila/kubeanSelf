@@ -26,16 +26,16 @@ export PATH=$PATH:$GOPATH/bin
 
 # prepare vagrant vm as k8 cluster single node
 vm_clean_up(){
-    vagrant destroy -f sonobouy_default
-    vagrant destroy -f sonobouy_default2
+    vagrant destroy -f sonobouyDefault
+    vagrant destroy -f sonobouyDefault2
     exit $EXIT_CODE
 }
 
 trap vm_clean_up EXIT
 # create 1master+1worker cluster
 cp $(pwd)/hack/Vagrantfile $(pwd)/
-sed -i "s/sonobouy_default_ip/${vm_ip_addr1}/" Vagrantfile
-sed -i "s/sonobouy_default2_ip/${vm_ip_addr2}/" Vagrantfile
+sed -i "s/sonobouyDefault_ip/${vm_ip_addr1}/" Vagrantfile
+sed -i "s/sonobouyDefault2_ip/${vm_ip_addr2}/" Vagrantfile
 vagrant up
 vagrant status
 ATTEMPTS=0
