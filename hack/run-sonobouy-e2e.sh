@@ -26,16 +26,16 @@ export PATH=$PATH:$GOPATH/bin
 
 # prepare vagrant vm as k8 cluster single node
 vm_clean_up(){
-    vagrant destroy -f default
-    vagrant destroy -f default2
+    vagrant destroy -f sonobouy_default
+    vagrant destroy -f sonobouy_default2
     exit $EXIT_CODE
 }
 
 trap vm_clean_up EXIT
 # create 1master+1worker cluster
 cp $(pwd)/hack/Vagrantfile $(pwd)/
-sed -i "s/default_ip/${vm_ip_addr1}/" Vagrantfile
-sed -i "s/default2_ip/${vm_ip_addr2}/" Vagrantfile
+sed -i "s/sonobouy_default_ip/${vm_ip_addr1}/" Vagrantfile
+sed -i "s/sonobouy_default2_ip/${vm_ip_addr2}/" Vagrantfile
 vagrant up
 vagrant status
 ATTEMPTS=0
@@ -64,5 +64,4 @@ sed -i "s/containerd/docker/" $(pwd)/test/kubean_sonobouy_e2e/e2e-install-cluste
 sed -i "s#  \"10.6.170.10:5000\": \"http://10.6.170.10:5000\"#   - 10.6.170.10:5000#" $(pwd)/test/kubean_sonobouy_e2e/e2e-install-cluster-sonobouy/vars-conf-cm.yml
 
 # Run nightly e2e
-ginkgo -v -race --fail-fast ./test/kubean_deploy_e2e/  -- --kubeconfig="${MAIN_KUBECONFIG}"
 ginkgo -v -race --fail-fast ./test/kubean_sonobouy_e2e/  -- --kubeconfig="${MAIN_KUBECONFIG}" --vmipaddr="${vm_ip_addr1}"

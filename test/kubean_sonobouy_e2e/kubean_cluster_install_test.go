@@ -29,7 +29,7 @@ var _ = ginkgo.Describe("e2e test cluster operation", func() {
 	defer ginkgo.GinkgoRecover()
 
 	// do cluster installation within docker
-	ginkgo.Context("when install a cluster using docker", func() {
+	ginkgo.Context("when install a sonobouy cluster using docker", func() {
 		clusterInstallYamlsPath := "e2e-install-cluster-sonobouy"
 		kubeanNamespace := "kubean-system"
 		kubeanClusterOpsName := "e2e-cluster1-install-sonobouy"
