@@ -49,6 +49,7 @@ sleep 10
 done
 
 sshpass -p root ssh root@${vm_ip_addr1} cat /proc/version
+ping -c 5 ${vm_ip_addr1}
 ping -c 5 ${vm_ip_addr2}
 echo "==> scp sonobuoy bin to master: "
 sshpass -p root scp $(pwd)/test/tools/sonobuoy root@$vm_ip_addr1:/usr/bin/

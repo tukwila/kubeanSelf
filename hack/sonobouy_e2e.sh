@@ -32,11 +32,6 @@ helm repo add ${local_helm_repo_alias} ${HELM_REPO}
 helm repo update
 helm repo list
 
-chmod +x ./hack/delete-cluster.sh
-chmod +x ./hack/local-up-kindcluster.sh
-chmod +x ./hack/run-e2e.sh
-chmod +x ./hack/run-sonobouy-e2e.sh
-
 ###### Clean Up #######
 echo "======= cluster prefix: ${CLUSTER_PREFIX}"
 
@@ -69,7 +64,7 @@ fi
 ###### e2e logic ########
 trap clean_up EXIT
 ./hack/local-up-kindcluster.sh "${TARGET_VERSION}" "${IMAGE_VERSION}" "${HELM_REPO}" "${IMG_REPO}" "kindest/node:v1.21.1" "${CLUSTER_PREFIX}"-host
-./hack/run-e2e.sh "${CLUSTER_PREFIX}"-host $SPRAY_JOB_VERSION $vm_ip_addr1
+./hack/run-sonobouy-e2e.sh "${CLUSTER_PREFIX}"-host $SPRAY_JOB_VERSION $vm_ip_addr1 $vm_ip_addr2
 
 ret=$?
 if [ ${ret} -ne 0 ]; then
