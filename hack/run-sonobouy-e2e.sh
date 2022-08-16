@@ -24,6 +24,11 @@ echo "==> current dir: "$(pwd)
 GOPATH=$(go env GOPATH | awk -F ':' '{print $1}')
 export PATH=$PATH:$GOPATH/bin
 
+chmod +x ./hack/delete-cluster.sh
+chmod +x ./hack/local-up-kindcluster.sh
+chmod +x ./hack/run-e2e.sh
+chmod +x ./hack/run-sonobouy-e2e.sh
+
 # prepare vagrant vm as k8 cluster single node
 vm_clean_up(){
     vagrant destroy -f sonobouyDefault

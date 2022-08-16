@@ -32,6 +32,11 @@ helm repo add ${local_helm_repo_alias} ${HELM_REPO}
 helm repo update
 helm repo list
 
+chmod +x ./hack/delete-cluster.sh
+chmod +x ./hack/local-up-kindcluster.sh
+chmod +x ./hack/run-e2e.sh
+chmod +x ./hack/run-sonobouy-e2e.sh
+
 ###### Clean Up #######
 echo "======= cluster prefix: ${CLUSTER_PREFIX}"
 
