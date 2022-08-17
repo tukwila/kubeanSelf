@@ -36,7 +36,7 @@ vm_clean_up(){
     exit $EXIT_CODE
 }
 
-trap vm_clean_up EXIT
+#trap vm_clean_up EXIT
 # create 1master+1worker cluster
 cp $(pwd)/hack/Vagrantfile $(pwd)/
 sed -i "s/sonobouyDefault_ip/${vm_ip_addr1}/" Vagrantfile

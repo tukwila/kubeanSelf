@@ -85,22 +85,22 @@ var _ = ginkgo.Describe("e2e test cluster operation", func() {
 
 	})
 	// check kube-system pod status
-	ginkgo.Context("When fetching 1master+1worker kube-system pods status", func() {
-		config, err = clientcmd.BuildConfigFromFlags("", localKubeConfigPath)
-		gomega.ExpectWithOffset(2, err).NotTo(gomega.HaveOccurred(), "failed build config")
-		kubeClient, err = kubernetes.NewForConfig(config)
-		gomega.ExpectWithOffset(2, err).NotTo(gomega.HaveOccurred(), "failed new client set")
+	// ginkgo.Context("When fetching 1master+1worker kube-system pods status", func() {
+	// 	config, err = clientcmd.BuildConfigFromFlags("", localKubeConfigPath)
+	// 	gomega.ExpectWithOffset(2, err).NotTo(gomega.HaveOccurred(), "failed build config")
+	// 	kubeClient, err = kubernetes.NewForConfig(config)
+	// 	gomega.ExpectWithOffset(2, err).NotTo(gomega.HaveOccurred(), "failed new client set")
 
-		podList, err := kubeClient.CoreV1().Pods("kube-system").List(context.TODO(), metav1.ListOptions{})
-		gomega.ExpectWithOffset(2, err).NotTo(gomega.HaveOccurred(), "failed to check kube-system pod status")
-		ginkgo.It("every pod in 1master+1worker cluster should be in running status", func() {
-			for _, pod := range podList.Items {
-				fmt.Println(pod.Name, string(pod.Status.Phase))
-				gomega.Expect(string(pod.Status.Phase)).To(gomega.Equal("Running"))
-			}
-		})
+	// 	podList, err := kubeClient.CoreV1().Pods("kube-system").List(context.TODO(), metav1.ListOptions{})
+	// 	gomega.ExpectWithOffset(2, err).NotTo(gomega.HaveOccurred(), "failed to check kube-system pod status")
+	// 	ginkgo.It("every pod in 1master+1worker cluster should be in running status", func() {
+	// 		for _, pod := range podList.Items {
+	// 			fmt.Println(pod.Name, string(pod.Status.Phase))
+	// 			gomega.Expect(string(pod.Status.Phase)).To(gomega.Equal("Running"))
+	// 		}
+	// 	})
 
-	})
+	// })
 
 	// sonobuoy run --sonobuoy-image docker.m.daocloud.io/sonobuoy/sonobuoy:v0.56.7 --plugin-env e2e.E2E_FOCUS=pods --plugin-env e2e.E2E_DRYRUN=true --wait
 	ginkgo.Context("do sonobuoy checking ", func() {
