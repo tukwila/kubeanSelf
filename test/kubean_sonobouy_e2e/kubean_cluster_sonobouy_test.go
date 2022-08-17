@@ -15,16 +15,14 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
-	kubeanClusterClientSet "kubean.io/api/generated/kubeancluster/clientset/versioned"
 )
 
-var _ = ginkgo.Describe("e2e test cluster operation", func() {
+var _ = ginkgo.Describe("e2e test cluster sonobouy check", func() {
 
 	config, err := clientcmd.BuildConfigFromFlags("", tools.Kubeconfig)
 	gomega.ExpectWithOffset(2, err).NotTo(gomega.HaveOccurred(), "failed build config")
 	kubeClient, err := kubernetes.NewForConfig(config)
 	gomega.ExpectWithOffset(2, err).NotTo(gomega.HaveOccurred(), "failed new client set")
-	localKubeConfigPath := "e2e-cluster1-install-sonobouy"
 
 	defer ginkgo.GinkgoRecover()
 
@@ -69,38 +67,7 @@ var _ = ginkgo.Describe("e2e test cluster operation", func() {
 			time.Sleep(1 * time.Minute)
 		}
 
-		clusterClientSet, err := kubeanClusterClientSet.NewForConfig(config)
-		gomega.ExpectWithOffset(2, err).NotTo(gomega.HaveOccurred(), "failed new client set")
-
-		// from KuBeanCluster: cluster1 get kubeconfRef: name: cluster1-kubeconf namespace: kubean-system
-		cluster1, err := clusterClientSet.KubeanclusterV1alpha1().KuBeanClusters().Get(context.Background(), "cluster1", metav1.GetOptions{})
-		fmt.Println("Name:", cluster1.Spec.KubeConfRef.Name, "NameSpace:", cluster1.Spec.KubeConfRef.NameSpace)
-		gomega.ExpectWithOffset(2, err).NotTo(gomega.HaveOccurred(), "failed to get KuBeanCluster")
-
-		// get configmap
-		kubeClient, _ := kubernetes.NewForConfig(config)
-		cluster1CF, _ := kubeClient.CoreV1().ConfigMaps(cluster1.Spec.KubeConfRef.NameSpace).Get(context.Background(), cluster1.Spec.KubeConfRef.Name, metav1.GetOptions{})
-		err1 := os.WriteFile(localKubeConfigPath, []byte(cluster1CF.Data["config"]), 0666)
-		gomega.ExpectWithOffset(2, err1).NotTo(gomega.HaveOccurred(), "failed to write localKubeConfigPath")
-
 	})
-	// check kube-system pod status
-	// ginkgo.Context("When fetching 1master+1worker kube-system pods status", func() {
-	// 	config, err = clientcmd.BuildConfigFromFlags("", localKubeConfigPath)
-	// 	gomega.ExpectWithOffset(2, err).NotTo(gomega.HaveOccurred(), "failed build config")
-	// 	kubeClient, err = kubernetes.NewForConfig(config)
-	// 	gomega.ExpectWithOffset(2, err).NotTo(gomega.HaveOccurred(), "failed new client set")
-
-	// 	podList, err := kubeClient.CoreV1().Pods("kube-system").List(context.TODO(), metav1.ListOptions{})
-	// 	gomega.ExpectWithOffset(2, err).NotTo(gomega.HaveOccurred(), "failed to check kube-system pod status")
-	// 	ginkgo.It("every pod in 1master+1worker cluster should be in running status", func() {
-	// 		for _, pod := range podList.Items {
-	// 			fmt.Println(pod.Name, string(pod.Status.Phase))
-	// 			gomega.Expect(string(pod.Status.Phase)).To(gomega.Equal("Running"))
-	// 		}
-	// 	})
-
-	// })
 
 	// sonobuoy run --sonobuoy-image docker.m.daocloud.io/sonobuoy/sonobuoy:v0.56.7 --plugin-env e2e.E2E_FOCUS=pods --plugin-env e2e.E2E_DRYRUN=true --wait
 	ginkgo.Context("do sonobuoy checking ", func() {
