@@ -108,7 +108,7 @@ var _ = ginkgo.Describe("e2e test cluster 1 master + 1 worker sonobouy check", f
 				// fmt.Println(pod.Name, string(pod.Status.Phase))
 				// gomega.Expect(string(pod.Status.Phase)).To(gomega.Equal("Running"))
 				for {
-					po, _ := kubeClient.CoreV1().Pods(kubeanNamespace).Get(context.Background(), pod.Name, metav1.GetOptions{})
+					po, _ := kubeClient.CoreV1().Pods("kube-system").Get(context.Background(), pod.Name, metav1.GetOptions{})
 					ginkgo.GinkgoWriter.Printf("* wait for kube-system pod[%s] status: %s\n", po.Name, po.Status.Phase)
 					podStatus := string(po.Status.Phase)
 					if podStatus == "Succeeded" || podStatus == "Failed" {
