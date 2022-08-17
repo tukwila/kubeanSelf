@@ -24,10 +24,7 @@ echo "==> current dir: "$(pwd)
 GOPATH=$(go env GOPATH | awk -F ':' '{print $1}')
 export PATH=$PATH:$GOPATH/bin
 
-chmod +x ./hack/delete-cluster.sh
-chmod +x ./hack/local-up-kindcluster.sh
-chmod +x ./hack/run-e2e.sh
-chmod +x ./hack/run-sonobouy-e2e.sh
+
 
 # prepare vagrant vm as k8 cluster single node
 vm_clean_up(){
@@ -36,7 +33,7 @@ vm_clean_up(){
     exit $EXIT_CODE
 }
 
-trap vm_clean_up EXIT
+#trap vm_clean_up EXIT
 # create 1master+1worker cluster
 cp $(pwd)/hack/Vagrantfile $(pwd)/
 sed -i "s/sonobouyDefault_ip/${vm_ip_addr1}/" Vagrantfile
