@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"os"
 	"os/exec"
 	"time"
 
@@ -14,14 +15,16 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
+	kubeanClusterClientSet "kubean.io/api/generated/kubeancluster/clientset/versioned"
 )
 
-var _ = ginkgo.Describe("e2e test cluster sonobouy check", func() {
+var _ = ginkgo.Describe("e2e test cluster 1 master + 1 worker sonobouy check", func() {
 
 	config, err := clientcmd.BuildConfigFromFlags("", tools.Kubeconfig)
 	gomega.ExpectWithOffset(2, err).NotTo(gomega.HaveOccurred(), "failed build config")
 	kubeClient, err := kubernetes.NewForConfig(config)
 	gomega.ExpectWithOffset(2, err).NotTo(gomega.HaveOccurred(), "failed new client set")
+	localKubeConfigPath := "cluster1-sonobouy-config"
 
 	defer ginkgo.GinkgoRecover()
 
@@ -65,6 +68,59 @@ var _ = ginkgo.Describe("e2e test cluster sonobouy check", func() {
 			}
 			time.Sleep(1 * time.Minute)
 		}
+		// check vagrant vm status
+		cmd = exec.Command("vagrant", "global-status")
+		ginkgo.GinkgoWriter.Printf("vagrant cmd: %s\n", cmd.String())
+		cmd.Stdout = &out
+		cmd.Stderr = &stderr
+		if err := cmd.Run(); err != nil {
+			ginkgo.GinkgoWriter.Printf("vagrant cmd error: %s\n", err.Error())
+			gomega.ExpectWithOffset(2, err).NotTo(gomega.HaveOccurred(), stderr.String())
+		}
+		ginkgo.GinkgoWriter.Printf("vagrant cmd result: %s\n", out.String())
+
+		clusterClientSet, err := kubeanClusterClientSet.NewForConfig(config)
+		gomega.ExpectWithOffset(2, err).NotTo(gomega.HaveOccurred(), "failed new client set")
+
+		// from KuBeanCluster: cluster1 get kubeconfRef: name: cluster1-kubeconf namespace: kubean-system
+		cluster1, err := clusterClientSet.KubeanclusterV1alpha1().KuBeanClusters().Get(context.Background(), "cluster1", metav1.GetOptions{})
+		fmt.Println("Name:", cluster1.Spec.KubeConfRef.Name, "NameSpace:", cluster1.Spec.KubeConfRef.NameSpace)
+		gomega.ExpectWithOffset(2, err).NotTo(gomega.HaveOccurred(), "failed to get KuBeanCluster")
+
+		// get configmap
+		kubeClient, err := kubernetes.NewForConfig(config)
+		cluster1CF, err := kubeClient.CoreV1().ConfigMaps(cluster1.Spec.KubeConfRef.NameSpace).Get(context.Background(), cluster1.Spec.KubeConfRef.Name, metav1.GetOptions{})
+		err1 := os.WriteFile(localKubeConfigPath, []byte(cluster1CF.Data["config"]), 0666)
+		gomega.ExpectWithOffset(2, err1).NotTo(gomega.HaveOccurred(), "failed to write localKubeConfigPath")
+	})
+
+	// check kube-system pod status
+	ginkgo.Context("When fetching kube-system pods status", func() {
+		config, err = clientcmd.BuildConfigFromFlags("", localKubeConfigPath)
+		gomega.ExpectWithOffset(2, err).NotTo(gomega.HaveOccurred(), "failed build config")
+		kubeClient, err = kubernetes.NewForConfig(config)
+		gomega.ExpectWithOffset(2, err).NotTo(gomega.HaveOccurred(), "failed new client set")
+
+		podList, err := kubeClient.CoreV1().Pods("kube-system").List(context.TODO(), metav1.ListOptions{})
+		gomega.ExpectWithOffset(2, err).NotTo(gomega.HaveOccurred(), "failed to check kube-system pod status")
+		ginkgo.It("every pod in kube-system should be in running status", func() {
+			for _, pod := range podList.Items {
+				// fmt.Println(pod.Name, string(pod.Status.Phase))
+				// gomega.Expect(string(pod.Status.Phase)).To(gomega.Equal("Running"))
+				for {
+					po, _ := kubeClient.CoreV1().Pods(kubeanNamespace).Get(context.Background(), pod.Name, metav1.GetOptions{})
+					ginkgo.GinkgoWriter.Printf("* wait for kube-system pod[%s] status: %s\n", po.Name, po.Status.Phase)
+					podStatus := string(po.Status.Phase)
+					if podStatus == "Succeeded" || podStatus == "Failed" {
+						ginkgo.It("kube-system pod should be Succeeded", func() {
+							gomega.Expect(podStatus).To(gomega.Equal("Succeeded"))
+						})
+						break
+					}
+					time.Sleep(1 * time.Minute)
+				}
+			}
+		})
 
 	})
 
