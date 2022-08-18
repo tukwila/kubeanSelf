@@ -184,12 +184,14 @@ var _ = ginkgo.Describe("e2e test cluster 1 master + 1 worker sonobouy check", f
 			gomega.ExpectWithOffset(2, err).NotTo(gomega.HaveOccurred(), "failed build config")
 			kubeClient, err = kubernetes.NewForConfig(config)
 			gomega.ExpectWithOffset(2, err).NotTo(gomega.HaveOccurred(), "failed new client set")
-	
+
 			// check kube version
 			nodeList, _ := kubeClient.CoreV1().Nodes().List(context.TODO(), metav1.ListOptions{})
 			for _, node := range nodeList.Items {
 				fmt.Println(node.Status.NodeInfo.KubeletVersion, node.Status.NodeInfo.KubeProxyVersion)
 			}
+
+		})
 
 	})
 
