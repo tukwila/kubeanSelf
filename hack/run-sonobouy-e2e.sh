@@ -69,7 +69,7 @@ sed -i "s#  \"10.6.170.10:5000\": \"http://10.6.170.10:5000\"#   - 10.6.170.10:5
 
 # prepare cluster upgrade job yml
 mkdir $(pwd)/test/kubean_sonobouy_e2e/e2e-upgrade-cluster
-cp -r $(pwd)/test/kubean_sonobouy_e2e/e2e-install-cluster-sonobouy cp -r $(pwd)/test/kubean_sonobouy_e2e/e2e-upgrade-cluster
+cp $(pwd)/test/kubean_sonobouy_e2e/e2e-install-cluster-sonobouy/* $(pwd)/test/kubean_sonobouy_e2e/e2e-upgrade-cluster/
 sed -i "s/v1.22.0/v1.23.7/" $(pwd)/test/kubean_sonobouy_e2e/e2e-install-cluster-sonobouy/vars-conf-cm.yml
 sed -i "s/e2e-cluster1-install-sonobouy/e2e-upgrade-cluster/" $(pwd)/test/kubean_sonobouy_e2e/e2e-install-cluster-sonobouy/kubeanClusterOps.yml
 
