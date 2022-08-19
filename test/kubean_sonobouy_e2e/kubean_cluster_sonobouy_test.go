@@ -61,23 +61,13 @@ var _ = ginkgo.Describe("e2e test cluster 1 master + 1 worker sonobouy check", f
 			gomega.ExpectWithOffset(2, err).NotTo(gomega.HaveOccurred(), "failed get job related pod")
 			podStatus := string(pod.Status.Phase)
 			if podStatus == "Succeeded" || podStatus == "Failed" {
-				ginkgo.It("cluster podStatus should be Succeeded", func() {
+				ginkgo.It("cluster deploy job related pod Status should be Succeeded", func() {
 					gomega.Expect(podStatus).To(gomega.Equal("Succeeded"))
 				})
 				break
 			}
 			time.Sleep(1 * time.Minute)
 		}
-		// check vagrant vm status
-		cmd = exec.Command("vagrant", "global-status")
-		ginkgo.GinkgoWriter.Printf("vagrant cmd: %s\n", cmd.String())
-		cmd.Stdout = &out
-		cmd.Stderr = &stderr
-		if err := cmd.Run(); err != nil {
-			ginkgo.GinkgoWriter.Printf("vagrant cmd error: %s\n", err.Error())
-			gomega.ExpectWithOffset(2, err).NotTo(gomega.HaveOccurred(), stderr.String())
-		}
-		ginkgo.GinkgoWriter.Printf("vagrant cmd result: %s\n", out.String())
 
 		clusterClientSet, err := kubeanClusterClientSet.NewForConfig(config)
 		gomega.ExpectWithOffset(2, err).NotTo(gomega.HaveOccurred(), "failed new client set")
@@ -103,32 +93,35 @@ var _ = ginkgo.Describe("e2e test cluster 1 master + 1 worker sonobouy check", f
 		kubeClient, err = kubernetes.NewForConfig(config)
 		gomega.ExpectWithOffset(2, err).NotTo(gomega.HaveOccurred(), "failed new client set")
 
-		// check kube version
-		nodeList, _ := kubeClient.CoreV1().Nodes().List(context.TODO(), metav1.ListOptions{})
-		for _, node := range nodeList.Items {
-			fmt.Println(node.Status.NodeInfo.KubeletVersion, node.Status.NodeInfo.KubeProxyVersion)
-		}
-
 		podList, err := kubeClient.CoreV1().Pods("kube-system").List(context.TODO(), metav1.ListOptions{})
 		gomega.ExpectWithOffset(2, err).NotTo(gomega.HaveOccurred(), "failed to check kube-system pod status")
 		ginkgo.It("every pod in kube-system should be in running status", func() {
 			for _, pod := range podList.Items {
-				fmt.Println(pod.Name, string(pod.Status.Phase))
-				// gomega.Expect(string(pod.Status.Phase)).To(gomega.Equal("Running"))
 				for {
 					po, _ := kubeClient.CoreV1().Pods("kube-system").Get(context.Background(), pod.Name, metav1.GetOptions{})
 					ginkgo.GinkgoWriter.Printf("* wait for kube-system pod[%s] status: %s\n", po.Name, po.Status.Phase)
 					podStatus := string(po.Status.Phase)
 					if podStatus == "Running" || podStatus == "Failed" {
-						// ginkgo.It("kube-system pod should be Succeeded", func() {
-						// 	gomega.Expect(podStatus).To(gomega.Equal("Succeeded"))
-						// })
+						ginkgo.It("kube-system pod should be Running", func() {
+							gomega.Expect(podStatus).To(gomega.Equal("Running"))
+						})
 						break
 					}
 					time.Sleep(1 * time.Minute)
 				}
 			}
 		})
+	})
+
+	// check kube version before upgrade
+	ginkgo.Context("check kube version before upgrade", func() {
+		nodeList, _ := kubeClient.CoreV1().Nodes().List(context.TODO(), metav1.ListOptions{})
+		for _, node := range nodeList.Items {
+			ginkgo.It("kube node version should be v1.22.12", func() {
+				gomega.Expect(node.Status.NodeInfo.KubeletVersion).To(gomega.Equal("v1.22.12"))
+				gomega.Expect(node.Status.NodeInfo.KubeProxyVersion).To(gomega.Equal("v1.22.12"))
+			})
+		}
 	})
 
 	// sonobuoy run --sonobuoy-image docker.m.daocloud.io/sonobuoy/sonobuoy:v0.56.7 --plugin-env e2e.E2E_FOCUS=pods --plugin-env e2e.E2E_DRYRUN=true --wait
@@ -160,7 +153,7 @@ var _ = ginkgo.Describe("e2e test cluster 1 master + 1 worker sonobouy check", f
 	})
 
 	// cluster upgrade
-	ginkgo.Context("do sonobuoy checking ", func() {
+	ginkgo.Context("do cluster upgrade from v1.22.12 to v1.23.7", func() {
 		clusterInstallYamlsPath := "e2e-upgrade-cluster"
 		// kubeanNamespace := "kubean-system"
 		// kubeanClusterOpsName := "e2e-upgrade-cluster"
@@ -176,23 +169,44 @@ var _ = ginkgo.Describe("e2e test cluster 1 master + 1 worker sonobouy check", f
 			ginkgo.GinkgoWriter.Printf("apply cmd error: %s\n", err.Error())
 			gomega.ExpectWithOffset(2, err).NotTo(gomega.HaveOccurred(), stderr.String())
 		}
+	})
 
-		time.Sleep(2 * time.Minute)
-		// check kube-system pod status
-		ginkgo.Context("When fetching kube-system pods status", func() {
-			config, err = clientcmd.BuildConfigFromFlags("", localKubeConfigPath)
-			gomega.ExpectWithOffset(2, err).NotTo(gomega.HaveOccurred(), "failed build config")
-			kubeClient, err = kubernetes.NewForConfig(config)
-			gomega.ExpectWithOffset(2, err).NotTo(gomega.HaveOccurred(), "failed new client set")
+	time.Sleep(1 * time.Minute)
+	// check kube-system pod status after upgrade
+	ginkgo.Context("When fetching kube-system pods status after upgrade", func() {
+		config, err = clientcmd.BuildConfigFromFlags("", localKubeConfigPath)
+		gomega.ExpectWithOffset(2, err).NotTo(gomega.HaveOccurred(), "failed build config")
+		kubeClient, err = kubernetes.NewForConfig(config)
+		gomega.ExpectWithOffset(2, err).NotTo(gomega.HaveOccurred(), "failed new client set")
 
-			// check kube version
-			nodeList, _ := kubeClient.CoreV1().Nodes().List(context.TODO(), metav1.ListOptions{})
-			for _, node := range nodeList.Items {
-				fmt.Println(node.Status.NodeInfo.KubeletVersion, node.Status.NodeInfo.KubeProxyVersion)
+		podList, err := kubeClient.CoreV1().Pods("kube-system").List(context.TODO(), metav1.ListOptions{})
+		gomega.ExpectWithOffset(2, err).NotTo(gomega.HaveOccurred(), "failed to check kube-system pod status")
+		ginkgo.It("every pod in kube-system should be in running status", func() {
+			for _, pod := range podList.Items {
+				for {
+					po, _ := kubeClient.CoreV1().Pods("kube-system").Get(context.Background(), pod.Name, metav1.GetOptions{})
+					ginkgo.GinkgoWriter.Printf("* wait for kube-system pod[%s] status: %s\n", po.Name, po.Status.Phase)
+					podStatus := string(po.Status.Phase)
+					if podStatus == "Running" || podStatus == "Failed" {
+						ginkgo.It("kube-system pod should be Running", func() {
+							gomega.Expect(podStatus).To(gomega.Equal("Running"))
+						})
+						break
+					}
+					time.Sleep(1 * time.Minute)
+				}
 			}
-
 		})
-
+	})
+	// check kube version after upgrade
+	ginkgo.Context("check kube version after upgrade", func() {
+		nodeList, _ := kubeClient.CoreV1().Nodes().List(context.TODO(), metav1.ListOptions{})
+		for _, node := range nodeList.Items {
+			ginkgo.It("kube node version should be v1.23.7", func() {
+				gomega.Expect(node.Status.NodeInfo.KubeletVersion).To(gomega.Equal("v1.23.72"))
+				gomega.Expect(node.Status.NodeInfo.KubeProxyVersion).To(gomega.Equal("v1.23.72"))
+			})
+		}
 	})
 
 })
