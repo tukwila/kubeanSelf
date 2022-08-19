@@ -41,18 +41,18 @@ vagrant status
 ATTEMPTS=0
 pingOK=0
 ping -w 2 -c 1 $vm_ip_addr1|grep "0%" && pingOK=true || pingOK=false
-until [ "${pingOK}" == "false" ] || [ $ATTEMPTS -eq 10 ]; do
+until [ "${pingOK}" == "true" ] || [ $ATTEMPTS -eq 10 ]; do
 ping -w 2 -c 1 $vm_ip_addr1|grep "0%" && pingOK=true || pingOK=false
 echo "==> ping "$vm_ip_addr1 $pingOK
 ATTEMPTS=$((ATTEMPTS + 1))
 sleep 10
 done
 
-sshpass -p root ssh root@${vm_ip_addr1} cat /proc/version
+sshpass -p root ssh -o StrictHostKeyChecking=no root@${vm_ip_addr1} cat /proc/version
 ping -c 5 ${vm_ip_addr1}
 ping -c 5 ${vm_ip_addr2}
 echo "==> scp sonobuoy bin to master: "
-sshpass -p root scp $(pwd)/test/tools/sonobuoy root@$vm_ip_addr1:/usr/bin/
+sshpass -p root scp -o StrictHostKeyChecking=no $(pwd)/test/tools/sonobuoy root@$vm_ip_addr1:/usr/bin/
 
 # prepare kubean install job yml using docker
 SPRAY_JOB="ghcr.io/kubean-io/kubean/spray-job:${SPRAY_JOB_VERSION}"
