@@ -119,7 +119,7 @@ var _ = ginkgo.Describe("e2e test cluster 1 master + 1 worker sonobouy check", f
 					po, _ := kubeClient.CoreV1().Pods("kube-system").Get(context.Background(), pod.Name, metav1.GetOptions{})
 					ginkgo.GinkgoWriter.Printf("* wait for kube-system pod[%s] status: %s\n", po.Name, po.Status.Phase)
 					podStatus := string(po.Status.Phase)
-					if podStatus == "Succeeded" || podStatus == "Failed" {
+					if podStatus == "Running" || podStatus == "Failed" {
 						// ginkgo.It("kube-system pod should be Succeeded", func() {
 						// 	gomega.Expect(podStatus).To(gomega.Equal("Succeeded"))
 						// })
