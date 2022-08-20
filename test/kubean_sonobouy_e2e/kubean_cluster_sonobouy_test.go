@@ -102,9 +102,7 @@ var _ = ginkgo.Describe("e2e test cluster 1 master + 1 worker sonobouy check", f
 					ginkgo.GinkgoWriter.Printf("* wait for kube-system pod[%s] status: %s\n", po.Name, po.Status.Phase)
 					podStatus := string(po.Status.Phase)
 					if podStatus == "Running" || podStatus == "Failed" {
-						// ginkgo.It("kube-system pod should be Running", func() {
-						// 	gomega.Expect(podStatus).To(gomega.Equal("Running"))
-						// })
+						gomega.Expect(po.Status.Phase).To(gomega.Equal("Running"))
 						break
 					}
 					time.Sleep(1 * time.Minute)
@@ -188,9 +186,7 @@ var _ = ginkgo.Describe("e2e test cluster 1 master + 1 worker sonobouy check", f
 					ginkgo.GinkgoWriter.Printf("* wait for kube-system pod[%s] status: %s\n", po.Name, po.Status.Phase)
 					podStatus := string(po.Status.Phase)
 					if podStatus == "Running" || podStatus == "Failed" {
-						ginkgo.It("kube-system pod should be Running", func() {
-							gomega.Expect(podStatus).To(gomega.Equal("Running"))
-						})
+						gomega.Expect(po.Status.Phase).To(gomega.Equal("Running"))
 						break
 					}
 					time.Sleep(1 * time.Minute)
