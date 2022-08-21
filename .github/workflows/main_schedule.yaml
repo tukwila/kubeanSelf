@@ -1,0 +1,34 @@
+name: main
+
+on:
+  # push:
+  #   branches:
+  #     - master
+  # refer: https://crontab.guru/examples.html
+  schedule:
+    - cron: '0 18 * * *'
+
+env:
+  KUKEAN_OPERATOR_IMAGE_NAME: kubean-operator
+  KUBESPRAY_IMAGE_NAME: kubespray
+  SPRAY_JOB_IMAGE_NAME: spray-job
+  KUBESPRAY_TAG: master
+jobs:
+  sonobouy_e2e:
+    needs: e2e
+    runs-on: self-hosted
+    permissions:
+      packages: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-go@v3
+        with:
+          go-version: 1.18.2
+
+      - name: e2e
+        run: |
+          bash hack/sonobouy_e2e.sh "" "" "https://kubean-io.github.io/kubean-helm-chart/" "ghcr.io/kubean-io/kubean" "" ${{ runner.name }}
