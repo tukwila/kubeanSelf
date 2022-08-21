@@ -6,7 +6,7 @@ on:
   #     - master
   # refer: https://crontab.guru/examples.html
   schedule:
-    - cron: '0 18 * * *'
+    - cron: '0 19 * * *'
 
 env:
   KUKEAN_OPERATOR_IMAGE_NAME: kubean-operator
@@ -29,6 +29,6 @@ jobs:
         with:
           go-version: 1.18.2
 
-      - name: e2e
+      - name: sonobuoy_e2e
         run: |
           bash hack/sonobouy_e2e.sh "" "" "https://kubean-io.github.io/kubean-helm-chart/" "ghcr.io/kubean-io/kubean" "" ${{ runner.name }}
