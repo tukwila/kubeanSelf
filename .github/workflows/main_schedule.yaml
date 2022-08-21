@@ -6,7 +6,7 @@ on:
   #     - master
   # refer: https://crontab.guru/examples.html
   schedule:
-    - cron: '0 19 * * *'
+    - cron: '3 19 * * *'
 
 env:
   KUKEAN_OPERATOR_IMAGE_NAME: kubean-operator
@@ -15,7 +15,6 @@ env:
   KUBESPRAY_TAG: master
 jobs:
   sonobouy_e2e:
-    needs: e2e
     runs-on: self-hosted
     permissions:
       packages: write
