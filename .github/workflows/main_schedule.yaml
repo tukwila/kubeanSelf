@@ -7,7 +7,7 @@ on:
   # refer: https://crontab.guru/examples.html
   workflow_dispatch:
     schedule:
-      - cron: '3 19 * * *'
+      - cron: '30 1 * * *'
 
 env:
   KUKEAN_OPERATOR_IMAGE_NAME: kubean-operator
