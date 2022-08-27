@@ -131,6 +131,35 @@ var _ = ginkgo.Describe("e2e test cluster 1 master + 1 worker sonobouy check", f
 		})
 	})
 
+	// check network configuration:
+	// cat /proc/sys/net/ipv4/ip_forward: 1
+	// cat /proc/sys/net/ipv4/tcp_tw_recycle: 0
+	ginkgo.Context("do network configurations checking ", func() {
+		masterSSH := fmt.Sprintf("root@%s", tools.Vmipaddr)
+		workerSSH := fmt.Sprintf("root@%s", tools.Vmipaddr2)
+		masterCmd := exec.Command("sshpass", "-p", "root", "ssh", masterSSH, "cat", "/proc/sys/net/ipv4/ip_forward")
+		workerCmd := exec.Command("sshpass", "-p", "root", "ssh", workerSSH, "cat", "/proc/sys/net/ipv4/ip_forward")
+		out, _ := tools.DoCmd(*masterCmd)
+		ginkgo.It("master net.ipv4.ip_forward result checking: ", func() {
+			gomega.Expect(out.String()).Should(gomega.ContainSubstring("1"))
+		})
+		out, _ = tools.DoCmd(*workerCmd)
+		ginkgo.It("worker net.ipv4.ip_forward result checking: ", func() {
+			gomega.Expect(out.String()).Should(gomega.ContainSubstring("1"))
+		})
+
+		masterCmd = exec.Command("sshpass", "-p", "root", "ssh", masterSSH, "cat", "/proc/sys/net/ipv4/tcp_tw_recycle")
+		workerCmd = exec.Command("sshpass", "-p", "root", "ssh", workerSSH, "cat", "/proc/sys/net/ipv4/tcp_tw_recycle")
+		out, _ = tools.DoCmd(*masterCmd)
+		ginkgo.It("master net.ipv4.tcp_tw_recycle result checking: ", func() {
+			gomega.Expect(out.String()).Should(gomega.ContainSubstring("0"))
+		})
+		out, _ = tools.DoCmd(*workerCmd)
+		ginkgo.It("worker net.ipv4.tcp_tw_recycle result checking: ", func() {
+			gomega.Expect(out.String()).Should(gomega.ContainSubstring("0"))
+		})
+	})
+
 	// cluster upgrade
 	ginkgo.Context("do cluster upgrade from v1.22.12 to v1.23.7", func() {
 		clusterInstallYamlsPath := "e2e-upgrade-cluster"
