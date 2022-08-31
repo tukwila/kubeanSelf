@@ -15,7 +15,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
-	kubeanClusterOpsClientSet "kubean.io/api/generated/kubeanclusterops/clientset/versioned"
 )
 
 var _ = ginkgo.Describe("kubean ops e2e test", func() {
@@ -139,7 +138,7 @@ var _ = ginkgo.Describe("kubean ops e2e test", func() {
 		out, _ := tools.DoCmd(*cmd)
 		fmt.Println("backofflimit=0 kubeanclusterops: ", out.String())
 		// wait for job fail
-		time.Sleep(30 * time.Second)
+		time.Sleep(100 * time.Second)
 		kubeClient, err := kubernetes.NewForConfig(config)
 		gomega.ExpectWithOffset(2, err).NotTo(gomega.HaveOccurred(), "failed new client set")
 		pods, _ := kubeClient.CoreV1().Pods(kubeanNamespace).List(context.Background(), metav1.ListOptions{
@@ -163,7 +162,7 @@ var _ = ginkgo.Describe("kubean ops e2e test", func() {
 		out, _ := tools.DoCmd(*cmd)
 		fmt.Println("backofflimit=0 kubeanclusterOps: ", out.String())
 		// wait for job fail
-		time.Sleep(30 * time.Second)
+		time.Sleep(100 * time.Second)
 		kubeClient, err := kubernetes.NewForConfig(config)
 		gomega.ExpectWithOffset(2, err).NotTo(gomega.HaveOccurred(), "failed new client set")
 		pods, _ := kubeClient.CoreV1().Pods(kubeanNamespace).List(context.Background(), metav1.ListOptions{
@@ -187,7 +186,7 @@ var _ = ginkgo.Describe("kubean ops e2e test", func() {
 		out, _ := tools.DoCmd(*cmd)
 		fmt.Println("backoffLimit=0 kubeanclusterOps: ", out.String())
 		// wait for job fail
-		time.Sleep(30 * time.Second)
+		time.Sleep(200 * time.Second)
 		kubeClient, err := kubernetes.NewForConfig(config)
 		gomega.ExpectWithOffset(2, err).NotTo(gomega.HaveOccurred(), "failed new client set")
 		pods, _ := kubeClient.CoreV1().Pods(kubeanNamespace).List(context.Background(), metav1.ListOptions{
