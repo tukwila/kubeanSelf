@@ -131,13 +131,13 @@ var _ = ginkgo.Describe("kubean ops e2e test", func() {
 		}
 	})
 
-	ginkgo.Context("when installation fail then retry, set backoffLimit=0", func() {
-		kubeanClusterOpsName := "backoffLimit0-clusterOps-test"
-		clusterInstallYamlsPath := "backoffLimit-clusterOps"
+	ginkgo.Context("when installation fail then retry, set backofflimit=0", func() {
+		kubeanClusterOpsName := "backofflimit0-clusterops-test"
+		clusterInstallYamlsPath := "backofflimit-clusterops"
 		installYamlPath := fmt.Sprint(tools.GetKuBeanPath(), clusterInstallYamlsPath)
 		cmd := exec.Command("kubectl", "--kubeconfig="+tools.Kubeconfig, "apply", "-f", installYamlPath)
 		out, _ := tools.DoCmd(*cmd)
-		fmt.Println("backoffLimit=0 kubeanclusterOps: ", out.String())
+		fmt.Println("backofflimit=0 kubeanclusterops: ", out.String())
 		// wait for job fail
 		time.Sleep(10 * time.Second)
 		kubeClient, err := kubernetes.NewForConfig(config)
@@ -151,17 +151,17 @@ var _ = ginkgo.Describe("kubean ops e2e test", func() {
 		})
 	})
 
-	ginkgo.Context("when installation fail then retry, set backoffLimit=1", func() {
-		opsFile = filepath.Join(basepath, "/backoffLimit-clusterOps/kubeanClusterOps.yml")
-		kubeanClusterOpsNewName := "backoffLimit1-clusterOps-test"
+	ginkgo.Context("when installation fail then retry, set backofflimit=1", func() {
+		opsFile = filepath.Join(basepath, "/backofflimit-clusterops/kubeanClusterOps.yml")
+		kubeanClusterOpsNewName := "backofflimit1-clusterops-test"
 		tools.UpdateOpsYml(kubeanClusterOpsNewName, opsFile)
 		tools.UpdateBackoffLimit(1, opsFile)
 
-		clusterInstallYamlsPath := "backoffLimit-clusterOps"
+		clusterInstallYamlsPath := "backofflimit-clusterops"
 		installYamlPath := fmt.Sprint(tools.GetKuBeanPath(), clusterInstallYamlsPath)
 		cmd := exec.Command("kubectl", "--kubeconfig="+tools.Kubeconfig, "apply", "-f", installYamlPath)
 		out, _ := tools.DoCmd(*cmd)
-		fmt.Println("backoffLimit=0 kubeanclusterOps: ", out.String())
+		fmt.Println("backofflimit=0 kubeanclusterOps: ", out.String())
 		// wait for job fail
 		time.Sleep(20 * time.Second)
 		kubeClient, err := kubernetes.NewForConfig(config)
@@ -175,13 +175,13 @@ var _ = ginkgo.Describe("kubean ops e2e test", func() {
 		})
 	})
 
-	ginkgo.Context("when installation fail then retry, set backoffLimit=2", func() {
-		opsFile = filepath.Join(basepath, "/backoffLimit-clusterOps/kubeanClusterOps.yml")
-		kubeanClusterOpsNewName := "backoffLimit2-clusterOps-test"
+	ginkgo.Context("when installation fail then retry, set backofflimit=2", func() {
+		opsFile = filepath.Join(basepath, "/backofflimit-clusterops/kubeanClusterOps.yml")
+		kubeanClusterOpsNewName := "backofflimit2-clusterops-test"
 		tools.UpdateOpsYml(kubeanClusterOpsNewName, opsFile)
 		tools.UpdateBackoffLimit(2, opsFile)
 
-		clusterInstallYamlsPath := "backoffLimit-clusterOps"
+		clusterInstallYamlsPath := "backofflimit-clusterops"
 		installYamlPath := fmt.Sprint(tools.GetKuBeanPath(), clusterInstallYamlsPath)
 		cmd := exec.Command("kubectl", "--kubeconfig="+tools.Kubeconfig, "apply", "-f", installYamlPath)
 		out, _ := tools.DoCmd(*cmd)

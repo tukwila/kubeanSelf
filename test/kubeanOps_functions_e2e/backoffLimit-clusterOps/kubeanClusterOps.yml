@@ -1,7 +1,7 @@
 apiVersion: kubeanclusterops.kubean.io/v1alpha1
 kind: KuBeanClusterOps
 metadata:
-  name: backoffLimit0-clusterOps-test
+  name: backofflimit0-clusterops-test
   labels:
     clusterName: cluster1
 spec:
