@@ -15,6 +15,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
+	kubeanClusterOpsClientSet "kubean.io/api/generated/kubeancluster/clientset/versioned"
 )
 
 var _ = ginkgo.Describe("kubean ops e2e test", func() {
