@@ -80,7 +80,7 @@ sed -i "s/e2e-cluster1-install-sonobouy/e2e-upgrade-cluster24/" $(pwd)/test/kube
 sed -i "s/cluster.yml/upgrade-cluster.yml/" $(pwd)/test/kubean_sonobouy_e2e/e2e-upgrade-cluster24/kubeanClusterOps.yml
 
 # Run nightly e2e
-ginkgo -v -race --fail-fast ./test/kubean_sonobouy_e2e/  -- --kubeconfig="${MAIN_KUBECONFIG}" --vmipaddr="${vm_ip_addr1}" --vmipaddr2="${vm_ip_addr2}"
+# ginkgo -v -race --fail-fast ./test/kubean_sonobouy_e2e/  -- --kubeconfig="${MAIN_KUBECONFIG}" --vmipaddr="${vm_ip_addr1}" --vmipaddr2="${vm_ip_addr2}"
 
 # prepare kubean ops yml
 cp $(pwd)/test/common/kubeanCluster.yml $(pwd)/test/kubeanOps_functions_e2e/e2e-install-cluster/
