@@ -3,9 +3,9 @@ kind: KuBeanClusterOps
 metadata:
   name: backofflimit0-clusterops-test
   labels:
-    clusterName: cluster1
+    clusterName: cluster2
 spec:
-  kuBeanCluster: cluster1
+  kuBeanCluster: cluster2
   image: ghcr.io/kubean-io/kubean/spray-job:latest
   backoffLimit: 0
   actionType: shell

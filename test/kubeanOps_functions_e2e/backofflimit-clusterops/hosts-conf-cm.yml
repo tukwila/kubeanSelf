@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: cluster1-hosts-conf
+  name: cluster2-hosts-conf
   namespace: kubean-system
 data:
   hosts.yml: ""

@@ -86,5 +86,7 @@ sed -i "s/cluster.yml/upgrade-cluster.yml/" $(pwd)/test/kubean_sonobouy_e2e/e2e-
 cp $(pwd)/test/common/kubeanCluster.yml $(pwd)/test/kubeanOps_functions_e2e/e2e-install-cluster/
 cp $(pwd)/test/common/vars-conf-cm.yml $(pwd)/test/kubeanOps_functions_e2e/e2e-install-cluster/
 cp $(pwd)/test/common/kubeanCluster.yml $(pwd)/test/kubeanOps_functions_e2e/backofflimit-clusterops/
+sed -i "s/cluster1/cluster2/" $(pwd)/test/kubeanOps_functions_e2e/backofflimit-clusterops/kubeanCluster.yml
 cp $(pwd)/test/common/vars-conf-cm.yml $(pwd)/test/kubeanOps_functions_e2e/backofflimit-clusterops/
+sed -i "s/cluster1/cluster2/" $(pwd)/test/kubeanOps_functions_e2e/backofflimit-clusterops/vars-conf-cm.yml
 ginkgo -v -race --fail-fast ./test/kubeanOps_functions_e2e/  -- --kubeconfig="${MAIN_KUBECONFIG}" --vmipaddr="${vm_ip_addr1}"

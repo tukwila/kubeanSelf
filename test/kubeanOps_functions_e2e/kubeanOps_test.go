@@ -13,7 +13,6 @@ import (
 	ginkgo "github.com/onsi/ginkgo/v2"
 	"github.com/onsi/gomega"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
 	kubeanClusterOpsClientSet "kubean.io/api/generated/kubeanclusterops/clientset/versioned"
 )
@@ -27,7 +26,6 @@ var _ = ginkgo.Describe("kubean ops e2e test", func() {
 	opsFile := filepath.Join(basepath, "/e2e-install-cluster/kubeanClusterOps.yml")
 	clusterClientOpsSet, err := kubeanClusterOpsClientSet.NewForConfig(config)
 	var out, stderr bytes.Buffer
-	kubeanNamespace := "kubean-system"
 
 	ginkgo.Context("when apply two jobs for one cluster hosts", func() {
 		// step1 create the first ops
@@ -129,77 +127,6 @@ var _ = ginkgo.Describe("kubean ops e2e test", func() {
 				break
 			}
 		}
-	})
-
-	ginkgo.Context("when installation fail then retry, set backofflimit=0", func() {
-		kubeanClusterOpsName := "backofflimit0-clusterops-test"
-		clusterInstallYamlsPath := "backofflimit-clusterops"
-		installYamlPath := fmt.Sprint(tools.GetKuBeanPath(), clusterInstallYamlsPath)
-		cmd := exec.Command("kubectl", "--kubeconfig="+tools.Kubeconfig, "apply", "-f", installYamlPath)
-		out, _ := tools.DoCmd(*cmd)
-		fmt.Println("backofflimit=0 kubeanclusterops: ", out.String())
-		// wait for job fail
-		time.Sleep(100 * time.Second)
-		kubeClient, err := kubernetes.NewForConfig(config)
-		gomega.ExpectWithOffset(2, err).NotTo(gomega.HaveOccurred(), "failed new client set")
-		pods, _ := kubeClient.CoreV1().Pods(kubeanNamespace).List(context.Background(), metav1.ListOptions{
-			LabelSelector: fmt.Sprintf("job-name=kubean-%s-job", kubeanClusterOpsName),
-		})
-		fmt.Println(pods.Items)
-
-		ginkgo.It("there is no more kubeanclusterops related pod be created to do cluster job", func() {
-			gomega.Expect(len(pods.Items)).Should(gomega.BeNumerically("==", 1))
-		})
-	})
-
-	ginkgo.Context("when installation fail then retry, set backofflimit=1", func() {
-		opsFile = filepath.Join(basepath, "/backofflimit-clusterops/kubeanClusterOps.yml")
-		kubeanClusterOpsNewName := "backofflimit1-clusterops-test"
-		tools.UpdateOpsYml(kubeanClusterOpsNewName, opsFile)
-		tools.UpdateBackoffLimit(1, opsFile)
-
-		clusterInstallYamlsPath := "backofflimit-clusterops"
-		installYamlPath := fmt.Sprint(tools.GetKuBeanPath(), clusterInstallYamlsPath)
-		cmd := exec.Command("kubectl", "--kubeconfig="+tools.Kubeconfig, "apply", "-f", installYamlPath)
-		out, _ := tools.DoCmd(*cmd)
-		fmt.Println("backofflimit=0 kubeanclusterOps: ", out.String())
-		// wait for job fail
-		time.Sleep(100 * time.Second)
-		kubeClient, err := kubernetes.NewForConfig(config)
-		gomega.ExpectWithOffset(2, err).NotTo(gomega.HaveOccurred(), "failed new client set")
-		pods, _ := kubeClient.CoreV1().Pods(kubeanNamespace).List(context.Background(), metav1.ListOptions{
-			LabelSelector: fmt.Sprintf("job-name=kubean-%s-job", kubeanClusterOpsNewName),
-		})
-		fmt.Println(pods.Items)
-
-		ginkgo.It("there is no more kubeanclusterops related pod be created to do cluster job", func() {
-			gomega.Expect(len(pods.Items)).Should(gomega.BeNumerically("==", 2))
-		})
-	})
-
-	ginkgo.Context("when installation fail then retry, set backofflimit=2", func() {
-		opsFile = filepath.Join(basepath, "/backofflimit-clusterops/kubeanClusterOps.yml")
-		kubeanClusterOpsNewName := "backofflimit2-clusterops-test"
-		tools.UpdateOpsYml(kubeanClusterOpsNewName, opsFile)
-		tools.UpdateBackoffLimit(2, opsFile)
-
-		clusterInstallYamlsPath := "backofflimit-clusterops"
-		installYamlPath := fmt.Sprint(tools.GetKuBeanPath(), clusterInstallYamlsPath)
-		cmd := exec.Command("kubectl", "--kubeconfig="+tools.Kubeconfig, "apply", "-f", installYamlPath)
-		out, _ := tools.DoCmd(*cmd)
-		fmt.Println("backoffLimit=0 kubeanclusterOps: ", out.String())
-		// wait for job fail
-		time.Sleep(100 * time.Second)
-		kubeClient, err := kubernetes.NewForConfig(config)
-		gomega.ExpectWithOffset(2, err).NotTo(gomega.HaveOccurred(), "failed new client set")
-		pods, _ := kubeClient.CoreV1().Pods(kubeanNamespace).List(context.Background(), metav1.ListOptions{
-			LabelSelector: fmt.Sprintf("job-name=kubean-%s-job", kubeanClusterOpsNewName),
-		})
-		fmt.Println(pods.Items)
-
-		ginkgo.It("there is no more kubeanclusterops related pod be created to do cluster job", func() {
-			gomega.Expect(len(pods.Items)).Should(gomega.BeNumerically("==", 3))
-		})
 	})
 
 })
