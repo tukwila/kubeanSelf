@@ -139,12 +139,13 @@ var _ = ginkgo.Describe("kubean ops e2e test", func() {
 		out, _ := tools.DoCmd(*cmd)
 		fmt.Println("backofflimit=0 kubeanclusterops: ", out.String())
 		// wait for job fail
-		time.Sleep(200 * time.Second)
+		time.Sleep(100 * time.Second)
 		kubeClient, err := kubernetes.NewForConfig(config)
 		gomega.ExpectWithOffset(2, err).NotTo(gomega.HaveOccurred(), "failed new client set")
 		pods, _ := kubeClient.CoreV1().Pods(kubeanNamespace).List(context.Background(), metav1.ListOptions{
 			LabelSelector: fmt.Sprintf("job-name=kubean-%s-job", kubeanClusterOpsName),
 		})
+		fmt.Println(pods.Items)
 
 		ginkgo.It("there is no more kubeanclusterops related pod be created to do cluster job", func() {
 			gomega.Expect(len(pods.Items)).Should(gomega.BeNumerically("==", 1))
@@ -163,12 +164,13 @@ var _ = ginkgo.Describe("kubean ops e2e test", func() {
 		out, _ := tools.DoCmd(*cmd)
 		fmt.Println("backofflimit=0 kubeanclusterOps: ", out.String())
 		// wait for job fail
-		time.Sleep(200 * time.Second)
+		time.Sleep(100 * time.Second)
 		kubeClient, err := kubernetes.NewForConfig(config)
 		gomega.ExpectWithOffset(2, err).NotTo(gomega.HaveOccurred(), "failed new client set")
 		pods, _ := kubeClient.CoreV1().Pods(kubeanNamespace).List(context.Background(), metav1.ListOptions{
 			LabelSelector: fmt.Sprintf("job-name=kubean-%s-job", kubeanClusterOpsNewName),
 		})
+		fmt.Println(pods.Items)
 
 		ginkgo.It("there is no more kubeanclusterops related pod be created to do cluster job", func() {
 			gomega.Expect(len(pods.Items)).Should(gomega.BeNumerically("==", 2))
@@ -187,12 +189,13 @@ var _ = ginkgo.Describe("kubean ops e2e test", func() {
 		out, _ := tools.DoCmd(*cmd)
 		fmt.Println("backoffLimit=0 kubeanclusterOps: ", out.String())
 		// wait for job fail
-		time.Sleep(200 * time.Second)
+		time.Sleep(100 * time.Second)
 		kubeClient, err := kubernetes.NewForConfig(config)
 		gomega.ExpectWithOffset(2, err).NotTo(gomega.HaveOccurred(), "failed new client set")
 		pods, _ := kubeClient.CoreV1().Pods(kubeanNamespace).List(context.Background(), metav1.ListOptions{
 			LabelSelector: fmt.Sprintf("job-name=kubean-%s-job", kubeanClusterOpsNewName),
 		})
+		fmt.Println(pods.Items)
 
 		ginkgo.It("there is no more kubeanclusterops related pod be created to do cluster job", func() {
 			gomega.Expect(len(pods.Items)).Should(gomega.BeNumerically("==", 3))
