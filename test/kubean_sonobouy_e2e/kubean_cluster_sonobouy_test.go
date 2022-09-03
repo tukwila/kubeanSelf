@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"strconv"
 	"time"
 
 	"github.com/kubean-io/kubean/test/tools"
@@ -116,7 +117,7 @@ var _ = ginkgo.Describe("e2e test cluster 1 master + 1 worker sonobouy check", f
 	// sonobuoy run --sonobuoy-image docker.m.daocloud.io/sonobuoy/sonobuoy:v0.56.7 --plugin-env e2e.E2E_FOCUS=pods --plugin-env e2e.E2E_DRYRUN=true --wait
 	ginkgo.Context("do sonobuoy checking ", func() {
 		masterSSH := fmt.Sprintf("root@%s", tools.Vmipaddr)
-		cmd := exec.Command("sshpass", "-p", "root", "ssh", masterSSH, "sonobuoy", "run", "--sonobuoy-image", "10.6.170.10:5000/sonobuoy/sonobuoy:v0.56.7", "--plugin-env", "e2e.E2E_FOCUS=pods", "--plugin-env", "e2e.E2E_DRYRUN=true", "--wait")
+		cmd := exec.Command("sshpass", "-p", "root", "ssh", "-o", "UserKnownHostsFile=/dev/null", "-o", "StrictHostKeyChecking=no", masterSSH, "sonobuoy", "run", "--sonobuoy-image", "10.6.170.10:5000/sonobuoy/sonobuoy:v0.56.7", "--plugin-env", "e2e.E2E_FOCUS=pods", "--plugin-env", "e2e.E2E_DRYRUN=true", "--wait")
 		out, _ := tools.DoCmd(*cmd)
 		fmt.Println(out.String())
 
@@ -161,6 +162,25 @@ var _ = ginkgo.Describe("e2e test cluster 1 master + 1 worker sonobouy check", f
 		fmt.Println("out: ", out4.String())
 		ginkgo.It("worker net.ipv4.tcp_tw_recycle result checking: ", func() {
 			gomega.Expect(out4.String()).Should(gomega.ContainSubstring("0"))
+		})
+	})
+
+	ginkgo.Context("check CNI: calico installed", func() {
+		masterSSH := fmt.Sprintf("root@%s", tools.Vmipaddr)
+		workerSSH := fmt.Sprintf("root@%s", tools.Vmipaddr2)
+		masterCmd := exec.Command("sshpass", "-p", "root", "ssh", "-o", "UserKnownHostsFile=/dev/null", "-o", "StrictHostKeyChecking=no", masterSSH, "ls", " /usr/local/bin/calico*", "|", "wc -l")
+		workerCmd := exec.Command("sshpass", "-p", "root", "ssh", "-o", "UserKnownHostsFile=/dev/null", "-o", "StrictHostKeyChecking=no", workerSSH, "ls", " /usr/local/bin/calico*", "|", "wc -l")
+		out1, _ := tools.DoCmd(*masterCmd)
+		fmt.Println("out: ", out1.String())
+		masterCalico, _ := strconv.Atoi(out1.String())
+		ginkgo.It("master calico checking: ", func() {
+			gomega.Expect(masterCalico).NotTo(gomega.Equal(0))
+		})
+		out2, _ := tools.DoCmd(*workerCmd)
+		fmt.Println("out: ", out2.String())
+		workerCalico, _ := strconv.Atoi(out2.String())
+		ginkgo.It("worker calico checking: ", func() {
+			gomega.Expect(workerCalico).NotTo(gomega.Equal(0))
 		})
 	})
 
