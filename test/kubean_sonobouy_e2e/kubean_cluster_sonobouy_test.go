@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"strconv"
 	"time"
 
 	"github.com/kubean-io/kubean/test/tools"
@@ -168,19 +167,17 @@ var _ = ginkgo.Describe("e2e test cluster 1 master + 1 worker sonobouy check", f
 	ginkgo.Context("check CNI: calico installed", func() {
 		masterSSH := fmt.Sprintf("root@%s", tools.Vmipaddr)
 		workerSSH := fmt.Sprintf("root@%s", tools.Vmipaddr2)
-		masterCmd := exec.Command("sshpass", "-p", "root", "ssh", "-o", "UserKnownHostsFile=/dev/null", "-o", "StrictHostKeyChecking=no", masterSSH, "ls", " /usr/local/bin/calico*", "|", "wc -l")
-		workerCmd := exec.Command("sshpass", "-p", "root", "ssh", "-o", "UserKnownHostsFile=/dev/null", "-o", "StrictHostKeyChecking=no", workerSSH, "ls", " /usr/local/bin/calico*", "|", "wc -l")
+		masterCmd := exec.Command("sshpass", "-p", "root", "ssh", "-o", "UserKnownHostsFile=/dev/null", "-o", "StrictHostKeyChecking=no", masterSSH, "ls", " /usr/local/bin/")
+		workerCmd := exec.Command("sshpass", "-p", "root", "ssh", "-o", "UserKnownHostsFile=/dev/null", "-o", "StrictHostKeyChecking=no", workerSSH, "ls", " /usr/local/bin/")
 		out1, _ := tools.DoCmd(*masterCmd)
-		fmt.Println("out: ", out1.String())
-		masterCalico, _ := strconv.Atoi(out1.String())
+		fmt.Println("out1: ", out1.String())
 		ginkgo.It("master calico checking: ", func() {
-			gomega.Expect(masterCalico).NotTo(gomega.Equal(0))
+			gomega.Expect(out1.String()).Should(gomega.ContainSubstring("calico"))
 		})
 		out2, _ := tools.DoCmd(*workerCmd)
-		fmt.Println("out: ", out2.String())
-		workerCalico, _ := strconv.Atoi(out2.String())
+		fmt.Println("out2: ", out2.String())
 		ginkgo.It("worker calico checking: ", func() {
-			gomega.Expect(workerCalico).NotTo(gomega.Equal(0))
+			gomega.Expect(out2.String()).Should(gomega.ContainSubstring("calico"))
 		})
 	})
 
