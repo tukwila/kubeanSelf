@@ -31,7 +31,7 @@ vm_clean_up(){
     exit $EXIT_CODE
 }
 
-#trap vm_clean_up EXIT
+trap vm_clean_up EXIT
 # create 1master+1worker cluster
 cp $(pwd)/hack/Vagrantfile $(pwd)/
 sed -i "s/sonobouyDefault_ip/${vm_ip_addr1}/" Vagrantfile
@@ -52,10 +52,10 @@ sshpass -p root ssh -o StrictHostKeyChecking=no root@${vm_ip_addr1} cat /proc/ve
 ping -c 5 ${vm_ip_addr1}
 ping -c 5 ${vm_ip_addr2}
 echo "==> scp sonobuoy bin to master: "
-sshpass -p root scp -o StrictHostKeyChecking=no $(pwd)/test/tools/sonobuoy root@$vm_ip_addr1:/usr/bin/
+sshpass -p root scp  -o StrictHostKeyChecking=no $(pwd)/test/tools/sonobuoy root@$vm_ip_addr1:/usr/bin/
 
 # prepare kubean install job yml using docker
-SPRAY_JOB="ghcr.io/kubean-io/kubean/spray-job:${SPRAY_JOB_VERSION}"
+SPRAY_JOB="ghcr.io/kubean-io/spray-job:${SPRAY_JOB_VERSION}"
 cp $(pwd)/test/common/kubeanCluster.yml $(pwd)/test/kubean_sonobouy_e2e/e2e-install-cluster-sonobouy/
 cp $(pwd)/test/common/vars-conf-cm.yml $(pwd)/test/kubean_sonobouy_e2e/e2e-install-cluster-sonobouy/
 sed -i "s/vm_ip_addr1/${vm_ip_addr1}/" $(pwd)/test/kubean_sonobouy_e2e/e2e-install-cluster-sonobouy/hosts-conf-cm.yml

@@ -6,14 +6,19 @@ metadata:
     clusterName: cluster1-offline-demo
 spec:
   kuBeanCluster: cluster1-offline-demo
-  image: ghcr.io/kubean-io/kubean/spray-job:latest # or change image to kubespray origin image version
+  image: ghcr.io/kubean-io/spray-job:latest # or change image to kubespray origin image version
   backoffLimit: 0
   actionType: playbook
   action: cluster.yml
   preHook:
-    - actionType: shell
-      action: |
-        ansible -i /conf/hosts.yml all -m ping;
-        echo 'ping success'
-        ansible -i /conf/hosts.yml all -m shell -a 'systemctl stop firewalld && systemctl disable firewalld'
-        echo 'stop firewalld success'
+    - actionType: playbook
+      action: ping.yml
+    - actionType: playbook
+      action: enable-repo.yml
+      extraArgs: |
+        -e "{yum_repo_url_list: ['http://MINIO_API_HOST:MINIO_API_PORT/centos/\$releasever/os/\$basearch']}"
+    - actionType: playbook
+      action: disable-firewalld.yml
+  postHook:
+    - actionType: playbook
+      action: cluster-info.yml

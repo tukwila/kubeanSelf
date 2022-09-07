@@ -6,8 +6,11 @@ import (
 	"testing"
 	"time"
 
+	clientsetfake "k8s.io/client-go/kubernetes/fake"
 	kubeanclusterv1alpha1 "kubean.io/api/apis/kubeancluster/v1alpha1"
 	kubeanclusteropsv1alpha1 "kubean.io/api/apis/kubeanclusterops/v1alpha1"
+	kubeanclusterv1alpha1fake "kubean.io/api/generated/kubeancluster/clientset/versioned/fake"
+	kubeanclusteropsv1alpha1fake "kubean.io/api/generated/kubeanclusterops/clientset/versioned/fake"
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -63,7 +66,7 @@ func TestUpdateStatusLoop(t *testing.T) {
 			name: "the status is Running and the result of fetchJobStatus is err",
 			args: func(ops *kubeanclusteropsv1alpha1.KuBeanClusterOps) bool {
 				ops.Status.Status = kubeanclusteropsv1alpha1.RunningStatus
-				needRequeue, err := controller.UpdateStatusLoop(ops, func(ops *kubeanclusteropsv1alpha1.KuBeanClusterOps) (kubeanclusteropsv1alpha1.ClusterOpsStatus, error) {
+				needRequeue, err := controller.UpdateStatusLoop(ops, func(ops *kubeanclusteropsv1alpha1.KuBeanClusterOps) (kubeanclusteropsv1alpha1.OpsStatus, error) {
 					return "", fmt.Errorf("one error")
 				})
 				return err != nil && err.Error() == "one error" && !needRequeue
@@ -74,7 +77,7 @@ func TestUpdateStatusLoop(t *testing.T) {
 			name: "the status is Running and the result of fetchJobStatus is still Running",
 			args: func(ops *kubeanclusteropsv1alpha1.KuBeanClusterOps) bool {
 				ops.Status.Status = kubeanclusteropsv1alpha1.RunningStatus
-				needRequeue, err := controller.UpdateStatusLoop(ops, func(ops *kubeanclusteropsv1alpha1.KuBeanClusterOps) (kubeanclusteropsv1alpha1.ClusterOpsStatus, error) {
+				needRequeue, err := controller.UpdateStatusLoop(ops, func(ops *kubeanclusteropsv1alpha1.KuBeanClusterOps) (kubeanclusteropsv1alpha1.OpsStatus, error) {
 					return kubeanclusteropsv1alpha1.RunningStatus, nil
 				})
 				return err == nil && needRequeue
@@ -86,7 +89,7 @@ func TestUpdateStatusLoop(t *testing.T) {
 			args: func(ops *kubeanclusteropsv1alpha1.KuBeanClusterOps) bool {
 				ops.Status.Status = kubeanclusteropsv1alpha1.RunningStatus
 				ops.Status.EndTime = nil
-				needRequeue, err := controller.UpdateStatusLoop(ops, func(ops *kubeanclusteropsv1alpha1.KuBeanClusterOps) (kubeanclusteropsv1alpha1.ClusterOpsStatus, error) {
+				needRequeue, err := controller.UpdateStatusLoop(ops, func(ops *kubeanclusteropsv1alpha1.KuBeanClusterOps) (kubeanclusteropsv1alpha1.OpsStatus, error) {
 					return kubeanclusteropsv1alpha1.SucceededStatus, nil
 				})
 				resultOps := &kubeanclusteropsv1alpha1.KuBeanClusterOps{}
@@ -104,7 +107,7 @@ func TestUpdateStatusLoop(t *testing.T) {
 				controller.Get(context.Background(), client.ObjectKey{Name: "clusteropsname"}, ops)
 				ops.Status.Status = kubeanclusteropsv1alpha1.RunningStatus
 				ops.Status.EndTime = nil
-				needRequeue, err := controller.UpdateStatusLoop(ops, func(ops *kubeanclusteropsv1alpha1.KuBeanClusterOps) (kubeanclusteropsv1alpha1.ClusterOpsStatus, error) {
+				needRequeue, err := controller.UpdateStatusLoop(ops, func(ops *kubeanclusteropsv1alpha1.KuBeanClusterOps) (kubeanclusteropsv1alpha1.OpsStatus, error) {
 					return kubeanclusteropsv1alpha1.FailedStatus, nil
 				})
 				return err == nil && !needRequeue && ops.Status.EndTime != nil && ops.Status.Status == kubeanclusteropsv1alpha1.FailedStatus
@@ -604,6 +607,108 @@ func TestCurrentJobNeedBlock(t *testing.T) {
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
 			if testCase.args() != testCase.want {
+				t.Fatal()
+			}
+		})
+	}
+}
+
+func TestIsValidImageName(t *testing.T) {
+	testCases := []struct {
+		name string
+		args string
+		want bool
+	}{
+		{
+			name: "empty string",
+			args: "",
+			want: false,
+		},
+		{
+			name: "space string",
+			args: " ",
+			want: false,
+		},
+		{
+			name: "underscore string",
+			args: "_",
+			want: false,
+		},
+		{
+			name: "dot string",
+			args: ".",
+			want: false,
+		},
+		{
+			name: "one letter",
+			args: "a",
+			want: true,
+		},
+		{
+			name: "ubuntu",
+			args: "ubuntu",
+			want: true,
+		},
+		{
+			name: "ubuntu with tag",
+			args: "ubuntu:14.01",
+			want: true,
+		},
+		{
+			name: "valid image name",
+			args: "ghcr.io/kubean-io/spray-job:latest",
+			want: true,
+		},
+	}
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			if IsValidImageName(testCase.args) != testCase.want {
+				t.Fatal()
+			}
+		})
+	}
+}
+
+func TestCreateKubeSprayJob(t *testing.T) {
+	controller := Controller{
+		Client:              newFakeClient(),
+		ClientSet:           clientsetfake.NewSimpleClientset(),
+		KubeanClusterSet:    kubeanclusterv1alpha1fake.NewSimpleClientset(),
+		KubeanClusterOpsSet: kubeanclusteropsv1alpha1fake.NewSimpleClientset(),
+	}
+	clusterOps := &kubeanclusteropsv1alpha1.KuBeanClusterOps{}
+	clusterOps.Spec.BackoffLimit = 10
+	clusterOps.Name = "myops"
+	clusterOps.Spec.Image = "myimage"
+	clusterOps.Spec.HostsConfRef = &apis.ConfigMapRef{
+		NameSpace: "mynamespace",
+		Name:      "hostsconf",
+	}
+	clusterOps.Spec.VarsConfRef = &apis.ConfigMapRef{
+		NameSpace: "mynamespace",
+		Name:      "varsconf",
+	}
+	clusterOps.Spec.EntrypointSHRef = &apis.ConfigMapRef{
+		NameSpace: "mynamespace",
+		Name:      "entrypoint",
+	}
+	controller.CreateKubeSprayJob(clusterOps)
+	tests := []struct {
+		name string
+		args func() bool
+		want bool
+	}{
+		{
+			name: "create job successfully",
+			args: func() bool {
+				needRequeue, err := controller.CreateKubeSprayJob(clusterOps)
+				return needRequeue && err == nil
+			},
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			if test.args() != test.want {
 				t.Fatal()
 			}
 		})

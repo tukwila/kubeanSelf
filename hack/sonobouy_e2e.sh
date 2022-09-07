@@ -10,7 +10,7 @@ set -e
 #[HELM_REPO](optional) the helm chart repo to be pulled from
 #
 
-TARGET_VERSION=${1:-latest}
+TARGET_VERSION=${1:-v0.0.0}
 IMAGE_VERSION=${2:-latest}
 HELM_REPO=${3:-"https://kubean-io.github.io/kubean-helm-chart"}
 IMG_REPO=${4:-"ghcr.io/kubean-io"}
@@ -58,7 +58,7 @@ if [ "${RUNNER_NAME}" == "kubean-actions-runner1" ]; then
     vm_ip_addr2="10.6.127.36"
 fi
 if [ "${RUNNER_NAME}" == "kubean-actions-runner2" ]; then
-    vm_ip_addr="10.6.127.35"
+    vm_ip_addr1="10.6.127.35"
     vm_ip_addr2="10.6.127.37"
 fi
 if [ "${RUNNER_NAME}" == "kubean-actions-runner3" ]; then

@@ -35,13 +35,13 @@ sed -i "$ i\  config.vm.network \"public_network\", ip: \"${vm_ip_addr}\", bridg
 vagrant up
 vagrant status
 ping -c 5 ${vm_ip_addr}
-sshpass -p root ssh -o StrictHostKeyChecking=no root@${vm_ip_addr} cat /proc/version
+sshpass -p root ssh -o StrictHostKeyChecking=no  root@${vm_ip_addr} cat /proc/version
 # print vm origin hostname
 echo "before deploy display hostname: "
 sshpass -p root ssh -o StrictHostKeyChecking=no root@${vm_ip_addr} hostname
 
 # prepare kubean install job yml using containerd
-SPRAY_JOB="ghcr.io/kubean-io/kubean/spray-job:${SPRAY_JOB_VERSION}"
+SPRAY_JOB="ghcr.io/kubean-io/spray-job:${SPRAY_JOB_VERSION}"
 cp $(pwd)/test/common/* $(pwd)/test/kubean_functions_e2e/e2e-install-cluster/
 sed -i "s/ip:/ip: ${vm_ip_addr}/" $(pwd)/test/kubean_functions_e2e/e2e-install-cluster/hosts-conf-cm.yml
 sed -i "s/ansible_host:/ansible_host: ${vm_ip_addr}/" $(pwd)/test/kubean_functions_e2e/e2e-install-cluster/hosts-conf-cm.yml
