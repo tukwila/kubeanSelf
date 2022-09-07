@@ -28,7 +28,7 @@ jobs:
 
       - name: e2e
         run: |
-          #bash hack/e2e.sh "" "" "https://kubean-io.github.io/kubean-helm-chart/" "ghcr.io/kubean-io/kubean" "" ${{ runner.name }}
+          #bash hack/e2e.sh "" "" "https://kubean-io.github.io/kubean-helm-chart/" "ghcr.io/kubean-io" "" ${{ runner.name }}
           echo "hello"
   sonobouy_e2e:
     needs: e2e
@@ -47,4 +47,4 @@ jobs:
 
       - name: e2e
         run: |
-          bash hack/sonobouy_e2e.sh "v0.2.1" "latest" "https://kubean-io.github.io/kubean-helm-chart/" "ghcr.io/kubean-io/kubean" "" ${{ runner.name }}
+          bash hack/sonobouy_e2e.sh "v0.2.1" "latest" "https://kubean-io.github.io/kubean-helm-chart/" "ghcr.io/kubean-io" "" ${{ runner.name }}
