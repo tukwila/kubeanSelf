@@ -22,7 +22,7 @@ import (
 	kubeanClusterOpsClientSet "kubean.io/api/generated/kubeanclusterops/clientset/versioned"
 )
 
-var _ = ginkgo.Describe("e2e test cluster operation", func() {
+var _ = ginkgo.Describe("Containerd: e2e test cluster operation", func() {
 
 	config, err := clientcmd.BuildConfigFromFlags("", tools.Kubeconfig)
 	gomega.ExpectWithOffset(2, err).NotTo(gomega.HaveOccurred(), "failed build config")
@@ -32,7 +32,7 @@ var _ = ginkgo.Describe("e2e test cluster operation", func() {
 
 	defer ginkgo.GinkgoRecover()
 
-	ginkgo.Context("when install a cluster", func() {
+	ginkgo.Context("Containerd: when install a cluster", func() {
 		clusterInstallYamlsPath := "e2e-install-cluster"
 		kubeanNamespace := "kubean-system"
 		kubeanClusterOpsName := "e2e-cluster1-install"
@@ -64,7 +64,7 @@ var _ = ginkgo.Describe("e2e test cluster operation", func() {
 			gomega.ExpectWithOffset(2, err).NotTo(gomega.HaveOccurred(), "failed get job related pod")
 			podStatus := string(pod.Status.Phase)
 			if podStatus == "Succeeded" || podStatus == "Failed" {
-				ginkgo.It("kubean cluster podStatus should be Succeeded", func() {
+				ginkgo.It("kubean containerd cluster podStatus should be Succeeded", func() {
 					gomega.Expect(podStatus).To(gomega.Equal("Succeeded"))
 				})
 				break
@@ -89,7 +89,7 @@ var _ = ginkgo.Describe("e2e test cluster operation", func() {
 	})
 
 	// check kube-system pod status
-	ginkgo.Context("When fetching kube-system pods status", func() {
+	ginkgo.Context("Containerd: when fetching kube-system pods status", func() {
 		config, err = clientcmd.BuildConfigFromFlags("", localKubeConfigPath)
 		gomega.ExpectWithOffset(2, err).NotTo(gomega.HaveOccurred(), "failed build config")
 		kubeClient, err = kubernetes.NewForConfig(config)
@@ -97,7 +97,7 @@ var _ = ginkgo.Describe("e2e test cluster operation", func() {
 
 		podList, err := kubeClient.CoreV1().Pods("kube-system").List(context.TODO(), metav1.ListOptions{})
 		gomega.ExpectWithOffset(2, err).NotTo(gomega.HaveOccurred(), "failed to check kube-system pod status")
-		ginkgo.It("every pod in kube-system should be in running status", func() {
+		ginkgo.It("every pod in containerd kube-system should be in running status", func() {
 			for _, pod := range podList.Items {
 				fmt.Println(pod.Name, string(pod.Status.Phase))
 				gomega.Expect(string(pod.Status.Phase)).To(gomega.Equal("Running"))
@@ -106,7 +106,25 @@ var _ = ginkgo.Describe("e2e test cluster operation", func() {
 
 	})
 
-	ginkgo.Context("when install nginx service", func() {
+	// check containerd functions
+	ginkgo.Context("Containerd: when check containerd functions", func() {
+		masterSSH := fmt.Sprintf("root@%s", tools.Vmipaddr)
+		masterCmd := exec.Command("sshpass", "-p", "root", "ssh", "-o", "UserKnownHostsFile=/dev/null", "-o", "StrictHostKeyChecking=no", masterSSH, "nerdctl", "info")
+		out, _ := tools.DoCmd(*masterCmd)
+		ginkgo.It("nerdctl info to check if server running: ", func() {
+			gomega.Expect(out.String()).Should(gomega.ContainSubstring("k8s.io"))
+			gomega.Expect(out.String()).Should(gomega.ContainSubstring("Cgroup Driver: systemd"))
+		})
+
+		masterCmd = exec.Command("sshpass", "-p", "root", "ssh", "-o", "UserKnownHostsFile=/dev/null", "-o", "StrictHostKeyChecking=no", masterSSH, "systemctl", "status", "containerd")
+		out1, _ := tools.DoCmd(*masterCmd)
+		ginkgo.It("systemctl status containerd to check if containerd running: ", func() {
+			gomega.Expect(out1.String()).Should(gomega.ContainSubstring("/etc/systemd/system/containerd.service;"))
+			gomega.Expect(out1.String()).Should(gomega.ContainSubstring("Active: active (running)"))
+		})
+	})
+
+	ginkgo.Context("Containerd: when install nginx service", func() {
 		config, err = clientcmd.BuildConfigFromFlags("", localKubeConfigPath)
 		gomega.ExpectWithOffset(2, err).NotTo(gomega.HaveOccurred(), "failed build config")
 		kubeClient, err = kubernetes.NewForConfig(config)
@@ -218,7 +236,7 @@ var _ = ginkgo.Describe("e2e test cluster operation", func() {
 	clusterOps, err := clusterClientOpsSet.KubeanclusteropsV1alpha1().KuBeanClusterOps().Get(context.Background(), clusterOpsName, metav1.GetOptions{})
 	fmt.Println("before patch KuBeanClusterOps.Spec.Action: ", clusterOps.Spec.Action)
 	gomega.ExpectWithOffset(2, err).NotTo(gomega.HaveOccurred(), "failed to check KuBeanClusterOps Spec.hasModified")
-	ginkgo.Context("when fetching KuBeanClusterOps", func() {
+	ginkgo.Context("Containerd: when fetching KuBeanClusterOps", func() {
 		clusterOps.Spec.Action = "e2etest"
 		newClusterOps, err := clusterClientOpsSet.KubeanclusteropsV1alpha1().KuBeanClusterOps().Update(context.Background(), clusterOps, metav1.UpdateOptions{})
 		time.Sleep(30 * time.Second)
@@ -242,7 +260,7 @@ var _ = ginkgo.Describe("e2e test cluster operation", func() {
 	})
 
 	// do cluster reset
-	ginkgo.Context("when reset a cluster", func() {
+	ginkgo.Context("Containerd: when reset a cluster", func() {
 		clusterInstallYamlsPath := "e2e-reset-cluster"
 		kubeanNamespace := "kubean-system"
 		kubeanClusterOpsName := "e2e-cluster1-reset"
@@ -288,7 +306,7 @@ var _ = ginkgo.Describe("e2e test cluster operation", func() {
 	})
 
 	// do cluster installation within docker
-	ginkgo.Context("when install a cluster using docker", func() {
+	ginkgo.Context("Docker: when install a cluster using docker", func() {
 		clusterInstallYamlsPath := "e2e-install-cluster-docker"
 		kubeanNamespace := "kubean-system"
 		kubeanClusterOpsName := "e2e-install-cluster-docker"
@@ -378,6 +396,23 @@ var _ = ginkgo.Describe("e2e test cluster operation", func() {
 		ginkgo.It("set-hostname to hello-kubean", func() {
 			fmt.Println("hostname: ", out.String())
 			gomega.Expect(out.String()).Should(gomega.ContainSubstring("hello-kubean"))
+		})
+	})
+
+	// check docker functions
+	ginkgo.Context("Docker: when check docker functions", func() {
+		masterSSH := fmt.Sprintf("root@%s", tools.Vmipaddr)
+		masterCmd := exec.Command("sshpass", "-p", "root", "ssh", "-o", "UserKnownHostsFile=/dev/null", "-o", "StrictHostKeyChecking=no", masterSSH, "docker", "info")
+		out, _ := tools.DoCmd(*masterCmd)
+		ginkgo.It("docker info to check if server running: ", func() {
+			gomega.Expect(out.String()).Should(gomega.ContainSubstring("Runtimes: docker-runc runc"))
+			gomega.Expect(out.String()).Should(gomega.ContainSubstring("Cgroup Driver: systemd"))
+		})
+
+		masterCmd = exec.Command("sshpass", "-p", "root", "ssh", "-o", "UserKnownHostsFile=/dev/null", "-o", "StrictHostKeyChecking=no", masterSSH, "systemctl", "status", "docker")
+		out1, _ := tools.DoCmd(*masterCmd)
+		ginkgo.It("systemctl status containerd to check if containerd running: ", func() {
+			gomega.Expect(out1.String()).Should(gomega.ContainSubstring("Active: active (running)"))
 		})
 	})
 })
