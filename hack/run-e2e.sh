@@ -46,7 +46,7 @@ cp $(pwd)/test/common/* $(pwd)/test/kubean_functions_e2e/e2e-install-cluster/
 sed -i "s/ip:/ip: ${vm_ip_addr}/" $(pwd)/test/kubean_functions_e2e/e2e-install-cluster/hosts-conf-cm.yml
 sed -i "s/ansible_host:/ansible_host: ${vm_ip_addr}/" $(pwd)/test/kubean_functions_e2e/e2e-install-cluster/hosts-conf-cm.yml
 sed -i "s#image:#image: ${SPRAY_JOB}#" $(pwd)/test/kubean_functions_e2e/e2e-install-cluster/kubeanClusterOps.yml
-sed -i "s/v1.23.7/v1.22.12/" $(pwd)/test/kubean_sonobouy_e2e/e2e-install-cluster/vars-conf-cm.yml
+sed -i "s/v1.23.7/v1.22.12/" $(pwd)/test/kubean_functions_e2e/e2e-install-cluster/vars-conf-cm.yml
 
 # prepare kubean reset job yml
 cp $(pwd)/test/common/* $(pwd)/test/kubean_functions_e2e/e2e-reset-cluster/
