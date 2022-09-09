@@ -32,7 +32,6 @@ data:
     calico_ctl_version: v3.23.1
     crun_version: 1.4.4
     kata_containers_version: 2.4.1
-    containerd_version: v1.6.4
 
     kube_service_addresses: 10.96.0.0/12
     kube_pods_subnet: 192.168.128.0/20
