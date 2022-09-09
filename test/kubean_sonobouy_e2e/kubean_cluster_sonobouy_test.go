@@ -259,8 +259,9 @@ var _ = ginkgo.Describe("e2e test cluster 1 master + 1 worker sonobouy check", f
 			gomega.Expect(pingNgin21IpCmd1Out.String()).Should(gomega.ContainSubstring("1 received"))
 		})
 		// 3.2 pod ping pod
+		kubeconfigfile := fmt.Sprintf("--kubeconfig=%s", localKubeConfigPath)
 		podsPingCmd1 := exec.Command("sshpass", "-p", "root", "ssh", "-o", "UserKnownHostsFile=/dev/null",
-			"-o", "StrictHostKeyChecking=no", masterSSH, "kubectl", "exec", "-it", "nginx1", "-n", "kube-system", "--kubeconfig", localKubeConfigPath,
+			"-o", "StrictHostKeyChecking=no", masterSSH, "kubectl", "exec", "-it", "nginx1", "-n", "kube-system", kubeconfigfile,
 			"--", "ping", "-w 2", "-c 1", nginx2Ip)
 		podsPingCmdOut1, _ := tools.DoCmd(*podsPingCmd1)
 		fmt.Println("pod ping pod: ", podsPingCmdOut1.String())
@@ -268,7 +269,7 @@ var _ = ginkgo.Describe("e2e test cluster 1 master + 1 worker sonobouy check", f
 			gomega.Expect(podsPingCmdOut1.String()).Should(gomega.ContainSubstring("1 received"))
 		})
 		podsPingCmd2 := exec.Command("sshpass", "-p", "root", "ssh", "-o", "UserKnownHostsFile=/dev/null",
-			"-o", "StrictHostKeyChecking=no", masterSSH, "kubectl", "exec", "-it", "nginx2", "-n", "kube-system", "--kubeconfig", localKubeConfigPath,
+			"-o", "StrictHostKeyChecking=no", masterSSH, "kubectl", "exec", "-it", "nginx2", "-n", "kube-system", kubeconfigfile,
 			"--", "ping", "-w 2", "-c 1", nginx1Ip)
 		podsPingCmdOut2, _ := tools.DoCmd(*podsPingCmd2)
 		fmt.Println("pod ping pod: ", podsPingCmdOut2.String())
