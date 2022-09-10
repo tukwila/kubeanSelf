@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"strings"
 	"time"
 
 	"github.com/kubean-io/kubean/test/tools"
@@ -165,9 +166,21 @@ var _ = ginkgo.Describe("e2e test cluster 1 master + 1 worker sonobouy check", f
 	})
 
 	ginkgo.Context("[Test]check CNI: calico installed", func() {
+		// 1. check calico/controller pods are running
+		config, _ = clientcmd.BuildConfigFromFlags("", localKubeConfigPath)
+		kubeClient, _ = kubernetes.NewForConfig(config)
+		podList, _ := kubeClient.CoreV1().Pods("kube-system").List(context.TODO(), metav1.ListOptions{})
+		for _, pod := range podList.Items {
+			if strings.Contains(pod.ObjectMeta.Name, "calico-node") || strings.Contains(pod.ObjectMeta.Name, "kube-controller") {
+				ginkgo.It("calico/controller pod should works", func() {
+					gomega.Expect(string(pod.Status.Phase)).To(gomega.Equal("Running"))
+				})
+			}
+		}
+
+		// 2. check calico binary files in /opt/cni/bin
 		masterSSH := fmt.Sprintf("root@%s", tools.Vmipaddr)
 		workerSSH := fmt.Sprintf("root@%s", tools.Vmipaddr2)
-		// 1. check calico binary files in /opt/cni/bin
 		masterCmd := exec.Command("sshpass", "-p", "root", "ssh", "-o", "UserKnownHostsFile=/dev/null", "-o", "StrictHostKeyChecking=no", masterSSH, "ls", "/opt/cni/bin/")
 		workerCmd := exec.Command("sshpass", "-p", "root", "ssh", "-o", "UserKnownHostsFile=/dev/null", "-o", "StrictHostKeyChecking=no", workerSSH, "ls", "/opt/cni/bin/")
 		out1, _ := tools.DoCmd(*masterCmd)
@@ -181,7 +194,7 @@ var _ = ginkgo.Describe("e2e test cluster 1 master + 1 worker sonobouy check", f
 			gomega.Expect(out2.String()).Should(gomega.ContainSubstring("calico"))
 		})
 
-		// 2. check calicoctl
+		// 3. check calicoctl
 		masterCmd = exec.Command("sshpass", "-p", "root", "ssh", "-o", "UserKnownHostsFile=/dev/null", "-o", "StrictHostKeyChecking=no", masterSSH, "calicoctl", "version")
 		out3, _ := tools.DoCmd(*masterCmd)
 		fmt.Println("out1: ", out3.String())
@@ -191,7 +204,7 @@ var _ = ginkgo.Describe("e2e test cluster 1 master + 1 worker sonobouy check", f
 			gomega.Expect(out3.String()).Should(gomega.ContainSubstring("kubespray,kubeadm,kdd"))
 		})
 
-		// 3. create 2 new pods, pod can ping pod, node ping pod
+		// 4. create 2 new pods, pod can ping pod, node ping pod
 		config, err = clientcmd.BuildConfigFromFlags("", localKubeConfigPath)
 		gomega.ExpectWithOffset(2, err).NotTo(gomega.HaveOccurred(), "failed build config")
 		kubeClient, err = kubernetes.NewForConfig(config)
@@ -245,7 +258,7 @@ var _ = ginkgo.Describe("e2e test cluster 1 master + 1 worker sonobouy check", f
 		ginkgo.It("nginxPod1 should be in running status", func() {
 			gomega.Expect(string(pod2.Status.Phase)).To(gomega.Equal("Running"))
 		})
-		// 3.1 node ping 2 pods
+		// 4.1 node ping 2 pods
 		pingNginx1IpCmd1 := exec.Command("sshpass", "-p", "root", "ssh", "-o", "UserKnownHostsFile=/dev/null", "-o", "StrictHostKeyChecking=no", masterSSH, "ping", "-c 1", nginx1Ip)
 		pingNginx1IpCmd1Out, _ := tools.DoCmd(*pingNginx1IpCmd1)
 		fmt.Println("node ping nginx pod 1: ", pingNginx1IpCmd1Out.String())
@@ -258,7 +271,7 @@ var _ = ginkgo.Describe("e2e test cluster 1 master + 1 worker sonobouy check", f
 		ginkgo.It("node ping nginx pod 2 succuss: ", func() {
 			gomega.Expect(pingNgin21IpCmd1Out.String()).Should(gomega.ContainSubstring("1 received"))
 		})
-		// 3.2 pod ping pod
+		// 4.2 pod ping pod
 		kubeconfigfile := fmt.Sprintf("--kubeconfig=%s", localKubeConfigPath)
 		podsPingCmd1 := exec.Command("sshpass", "-p", "root", "ssh", "-o", "UserKnownHostsFile=/dev/null",
 			"-o", "StrictHostKeyChecking=no", masterSSH, "kubectl", "exec", "-it", "nginx1", "-n", "kube-system", kubeconfigfile,
