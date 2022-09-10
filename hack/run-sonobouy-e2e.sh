@@ -30,63 +30,110 @@ vm_clean_up(){
     vagrant destroy -f sonobouyDefault2
     exit $EXIT_CODE
 }
+node_clean_up(){
+    vagrant destroy -f default
+    exit $EXIT_CODE
+}
 
-trap vm_clean_up EXIT
-# create 1master+1worker cluster
-cp $(pwd)/hack/Vagrantfile $(pwd)/
-sed -i "s/sonobouyDefault_ip/${vm_ip_addr1}/" Vagrantfile
-sed -i "s/sonobouyDefault2_ip/${vm_ip_addr2}/" Vagrantfile
-vagrant up
-vagrant status
-ATTEMPTS=0
-pingOK=0
-ping -w 2 -c 1 $vm_ip_addr1|grep "0%" && pingOK=true || pingOK=false
-until [ "${pingOK}" == "true" ] || [ $ATTEMPTS -eq 10 ]; do
-ping -w 2 -c 1 $vm_ip_addr1|grep "0%" && pingOK=true || pingOK=false
-echo "==> ping "$vm_ip_addr1 $pingOK
-ATTEMPTS=$((ATTEMPTS + 1))
-sleep 10
-done
+create_2node_vms(){
+    # create 1master+1worker cluster
+    if [ -f $(pwd)/Vagrantfile ]; then
+        rm -f $(pwd)/Vagrantfile
+    fi
+    cp $(pwd)/hack/Vagrantfile $(pwd)/
+    sed -i "s/sonobouyDefault_ip/${vm_ip_addr1}/" Vagrantfile
+    sed -i "s/sonobouyDefault2_ip/${vm_ip_addr2}/" Vagrantfile
+    vagrant up
+    vagrant status
+    ATTEMPTS=0
+    pingOK=0
+    ping -w 2 -c 1 $vm_ip_addr1|grep "0%" && pingOK=true || pingOK=false
+    until [ "${pingOK}" == "true" ] || [ $ATTEMPTS -eq 10 ]; do
+    ping -w 2 -c 1 $vm_ip_addr1|grep "0%" && pingOK=true || pingOK=false
+    echo "==> ping "$vm_ip_addr1 $pingOK
+    ATTEMPTS=$((ATTEMPTS + 1))
+    sleep 10
+    done
+}
 
-sshpass -p root ssh -o StrictHostKeyChecking=no root@${vm_ip_addr1} cat /proc/version
-ping -c 5 ${vm_ip_addr1}
-ping -c 5 ${vm_ip_addr2}
-echo "==> scp sonobuoy bin to master: "
-sshpass -p root scp  -o StrictHostKeyChecking=no $(pwd)/test/tools/sonobuoy root@$vm_ip_addr1:/usr/bin/
+create_1node_vm(){
+    if [ -f $(pwd)/Vagrantfile ]; then
+        rm -f $(pwd)/Vagrantfile
+    fi
+    vagrant init Kiowa/kubean-e2e-vm-template --box-version 0
+    sed -i "$ i\  config.vm.network \"public_network\", ip: \"${vm_ip_addr}\", bridge: \"ens192\"" Vagrantfile
+    vagrant up
+    vagrant status
+    ping -c 5 ${vm_ip_addr}
+    sshpass -p root ssh -o StrictHostKeyChecking=no  root@${vm_ip_addr} cat /proc/version
+    # print vm origin hostname
+    echo "before deploy display hostname: "
+    sshpass -p root ssh -o StrictHostKeyChecking=no root@${vm_ip_addr} hostname
+}
 
-# prepare kubean install job yml using docker
-SPRAY_JOB="ghcr.io/kubean-io/spray-job:${SPRAY_JOB_VERSION}"
-cp $(pwd)/test/common/kubeanCluster.yml $(pwd)/test/kubean_sonobouy_e2e/e2e-install-cluster-sonobouy/
-cp $(pwd)/test/common/vars-conf-cm.yml $(pwd)/test/kubean_sonobouy_e2e/e2e-install-cluster-sonobouy/
-sed -i "s/vm_ip_addr1/${vm_ip_addr1}/" $(pwd)/test/kubean_sonobouy_e2e/e2e-install-cluster-sonobouy/hosts-conf-cm.yml
-sed -i "s/vm_ip_addr2/${vm_ip_addr2}/" $(pwd)/test/kubean_sonobouy_e2e/e2e-install-cluster-sonobouy/hosts-conf-cm.yml
-sed -i "s#image:#image: ${SPRAY_JOB}#" $(pwd)/test/kubean_sonobouy_e2e/e2e-install-cluster-sonobouy/kubeanClusterOps.yml
-sed -i "s/containerd/docker/" $(pwd)/test/kubean_sonobouy_e2e/e2e-install-cluster-sonobouy/vars-conf-cm.yml
-sed -i "s/v1.23.7/v1.22.12/" $(pwd)/test/kubean_sonobouy_e2e/e2e-install-cluster-sonobouy/vars-conf-cm.yml
-sed -i "s#  \"10.6.170.10:5000\": \"http://10.6.170.10:5000\"#   - 10.6.170.10:5000#" $(pwd)/test/kubean_sonobouy_e2e/e2e-install-cluster-sonobouy/vars-conf-cm.yml
+# trap vm_clean_up EXIT
+# create_2node_vms
 
-# prepare cluster upgrade job yml --> upgrade from v1.22.12 to v1.23.7
-mkdir $(pwd)/test/kubean_sonobouy_e2e/e2e-upgrade-cluster
-cp $(pwd)/test/kubean_sonobouy_e2e/e2e-install-cluster-sonobouy/* $(pwd)/test/kubean_sonobouy_e2e/e2e-upgrade-cluster/
-sed -i "s/v1.22.12/v1.23.7/" $(pwd)/test/kubean_sonobouy_e2e/e2e-upgrade-cluster/vars-conf-cm.yml
-sed -i "s/e2e-cluster1-install-sonobouy/e2e-upgrade-cluster/" $(pwd)/test/kubean_sonobouy_e2e/e2e-upgrade-cluster/kubeanClusterOps.yml
-sed -i "s/cluster.yml/upgrade-cluster.yml/" $(pwd)/test/kubean_sonobouy_e2e/e2e-upgrade-cluster/kubeanClusterOps.yml
+# sshpass -p root ssh -o StrictHostKeyChecking=no root@${vm_ip_addr1} cat /proc/version
+# ping -c 5 ${vm_ip_addr1}
+# ping -c 5 ${vm_ip_addr2}
+# echo "==> scp sonobuoy bin to master: "
+# sshpass -p root scp  -o StrictHostKeyChecking=no $(pwd)/test/tools/sonobuoy root@$vm_ip_addr1:/usr/bin/
+# SPRAY_JOB="ghcr.io/kubean-io/spray-job:${SPRAY_JOB_VERSION}"
 
-# prepare cluster upgrade job yml --> upgrade from v1.23.7 to v1.24.3
-mkdir $(pwd)/test/kubean_sonobouy_e2e/e2e-upgrade-cluster24
-cp $(pwd)/test/kubean_sonobouy_e2e/e2e-install-cluster-sonobouy/* $(pwd)/test/kubean_sonobouy_e2e/e2e-upgrade-cluster24/
-sed -i "s/v1.22.12/v1.24.3/" $(pwd)/test/kubean_sonobouy_e2e/e2e-upgrade-cluster24/vars-conf-cm.yml
-sed -i "s/e2e-cluster1-install-sonobouy/e2e-upgrade-cluster24/" $(pwd)/test/kubean_sonobouy_e2e/e2e-upgrade-cluster24/kubeanClusterOps.yml
-sed -i "s/cluster.yml/upgrade-cluster.yml/" $(pwd)/test/kubean_sonobouy_e2e/e2e-upgrade-cluster24/kubeanClusterOps.yml
+# # prepare kubean install job yml using docker
+# cp $(pwd)/test/common/kubeanCluster.yml $(pwd)/test/kubean_sonobouy_e2e/e2e-install-cluster-sonobouy/
+# cp $(pwd)/test/common/vars-conf-cm.yml $(pwd)/test/kubean_sonobouy_e2e/e2e-install-cluster-sonobouy/
+# sed -i "s/vm_ip_addr1/${vm_ip_addr1}/" $(pwd)/test/kubean_sonobouy_e2e/e2e-install-cluster-sonobouy/hosts-conf-cm.yml
+# sed -i "s/vm_ip_addr2/${vm_ip_addr2}/" $(pwd)/test/kubean_sonobouy_e2e/e2e-install-cluster-sonobouy/hosts-conf-cm.yml
+# sed -i "s#image:#image: ${SPRAY_JOB}#" $(pwd)/test/kubean_sonobouy_e2e/e2e-install-cluster-sonobouy/kubeanClusterOps.yml
+# sed -i "s/containerd/docker/" $(pwd)/test/kubean_sonobouy_e2e/e2e-install-cluster-sonobouy/vars-conf-cm.yml
+# sed -i "s/v1.23.7/v1.22.12/" $(pwd)/test/kubean_sonobouy_e2e/e2e-install-cluster-sonobouy/vars-conf-cm.yml
+# sed -i "s#  \"10.6.170.10:5000\": \"http://10.6.170.10:5000\"#   - 10.6.170.10:5000#" $(pwd)/test/kubean_sonobouy_e2e/e2e-install-cluster-sonobouy/vars-conf-cm.yml
 
-# Run nightly e2e
-ginkgo -v -race --fail-fast ./test/kubean_sonobouy_e2e/  -- --kubeconfig="${MAIN_KUBECONFIG}" --vmipaddr="${vm_ip_addr1}" --vmipaddr2="${vm_ip_addr2}"
+# # prepare cluster upgrade job yml --> upgrade from v1.22.12 to v1.23.7
+# mkdir $(pwd)/test/kubean_sonobouy_e2e/e2e-upgrade-cluster
+# cp $(pwd)/test/kubean_sonobouy_e2e/e2e-install-cluster-sonobouy/* $(pwd)/test/kubean_sonobouy_e2e/e2e-upgrade-cluster/
+# sed -i "s/v1.22.12/v1.23.7/" $(pwd)/test/kubean_sonobouy_e2e/e2e-upgrade-cluster/vars-conf-cm.yml
+# sed -i "s/e2e-cluster1-install-sonobouy/e2e-upgrade-cluster/" $(pwd)/test/kubean_sonobouy_e2e/e2e-upgrade-cluster/kubeanClusterOps.yml
+# sed -i "s/cluster.yml/upgrade-cluster.yml/" $(pwd)/test/kubean_sonobouy_e2e/e2e-upgrade-cluster/kubeanClusterOps.yml
 
-# prepare kubean ops yml
-cp $(pwd)/test/common/kubeanCluster.yml $(pwd)/test/kubeanOps_functions_e2e/e2e-install-cluster/
-cp $(pwd)/test/common/vars-conf-cm.yml $(pwd)/test/kubeanOps_functions_e2e/e2e-install-cluster/
-cp $(pwd)/test/common/kubeanCluster.yml $(pwd)/test/kubeanOps_functions_e2e/backofflimit-clusterops/
-sed -i "s/cluster1/cluster2/" $(pwd)/test/kubeanOps_functions_e2e/backofflimit-clusterops/kubeanCluster.yml
-cp $(pwd)/test/common/vars-conf-cm.yml $(pwd)/test/kubeanOps_functions_e2e/backofflimit-clusterops/
-sed -i "s/cluster1/cluster2/" $(pwd)/test/kubeanOps_functions_e2e/backofflimit-clusterops/vars-conf-cm.yml
-ginkgo -v -race --fail-fast ./test/kubeanOps_functions_e2e/  -- --kubeconfig="${MAIN_KUBECONFIG}" --vmipaddr="${vm_ip_addr1}"
+# # prepare cluster upgrade job yml --> upgrade from v1.23.7 to v1.24.3
+# mkdir $(pwd)/test/kubean_sonobouy_e2e/e2e-upgrade-cluster24
+# cp $(pwd)/test/kubean_sonobouy_e2e/e2e-install-cluster-sonobouy/* $(pwd)/test/kubean_sonobouy_e2e/e2e-upgrade-cluster24/
+# sed -i "s/v1.22.12/v1.24.3/" $(pwd)/test/kubean_sonobouy_e2e/e2e-upgrade-cluster24/vars-conf-cm.yml
+# sed -i "s/e2e-cluster1-install-sonobouy/e2e-upgrade-cluster24/" $(pwd)/test/kubean_sonobouy_e2e/e2e-upgrade-cluster24/kubeanClusterOps.yml
+# sed -i "s/cluster.yml/upgrade-cluster.yml/" $(pwd)/test/kubean_sonobouy_e2e/e2e-upgrade-cluster24/kubeanClusterOps.yml
+
+# # Run nightly e2e
+# ginkgo -v -race --fail-fast ./test/kubean_sonobouy_e2e/  -- --kubeconfig="${MAIN_KUBECONFIG}" --vmipaddr="${vm_ip_addr1}" --vmipaddr2="${vm_ip_addr2}"
+
+# # prepare kubean ops yml
+# cp $(pwd)/test/common/kubeanCluster.yml $(pwd)/test/kubeanOps_functions_e2e/e2e-install-cluster/
+# cp $(pwd)/test/common/vars-conf-cm.yml $(pwd)/test/kubeanOps_functions_e2e/e2e-install-cluster/
+# cp $(pwd)/test/common/kubeanCluster.yml $(pwd)/test/kubeanOps_functions_e2e/backofflimit-clusterops/
+# sed -i "s/cluster1/cluster2/" $(pwd)/test/kubeanOps_functions_e2e/backofflimit-clusterops/kubeanCluster.yml
+# cp $(pwd)/test/common/vars-conf-cm.yml $(pwd)/test/kubeanOps_functions_e2e/backofflimit-clusterops/
+# sed -i "s/cluster1/cluster2/" $(pwd)/test/kubeanOps_functions_e2e/backofflimit-clusterops/vars-conf-cm.yml
+# ginkgo -v -race --fail-fast ./test/kubeanOps_functions_e2e/  -- --kubeconfig="${MAIN_KUBECONFIG}" --vmipaddr="${vm_ip_addr1}"
+
+
+## do add worker node senario
+# before addwork, one node cluster should be deployed
+trap node_clean_up EXIT
+vagrant destroy -f sonobouyDefault
+vagrant destroy -f sonobouyDefault2
+create_1node_vm
+# prepare kubean install job yml using containerd then deploy one node cluster
+cp $(pwd)/test/common/* $(pwd)/test/kubean_functions_e2e/e2e-install-cluster/
+sed -i "s/ip:/ip: ${vm_ip_addr1}/" $(pwd)/test/kubean_functions_e2e/e2e-install-cluster/hosts-conf-cm.yml
+sed -i "s/ansible_host:/ansible_host: ${vm_ip_addr}/" $(pwd)/test/kubean_functions_e2e/e2e-install-cluster/hosts-conf-cm.yml
+sed -i "s#image:#image: ${SPRAY_JOB}#" $(pwd)/test/kubean_functions_e2e/e2e-install-cluster/kubeanClusterOps.yml
+ginkgo -v -race --fail-fast ./test/kubean_deploy_e2e/  -- --kubeconfig="${MAIN_KUBECONFIG}"
+# prepare add-worker-node yaml
+cp $(pwd)/test/common/kubeanCluster.yml $(pwd)/test/kubean_add_worker_e2e/add-worker-node
+cp $(pwd)/test/common/vars-conf-cm.yml $(pwd)/test/kubean_add_worker_e2e/add-worker-node
+sed -i "s/vm_ip_addr1/${vm_ip_addr1}/" $(pwd)/test/kubean_add_worker_e2e/add-worker-node/hosts-conf-cm.yml
+sed -i "s/vm_ip_addr2/${vm_ip_addr2}/" $(pwd)/test/kubean_add_worker_e2e/add-worker-node/hosts-conf-cm.yml
+sed -i "s#image:#image: ${SPRAY_JOB}#" $(pwd)/test/kubean_add_worker_e2e/add-worker-node/kubeanClusterOps.yml
+ginkgo -v -race --fail-fast ./test/kubean_add_worker_e2e/  -- --kubeconfig="${MAIN_KUBECONFIG}" --vmipaddr="${vm_ip_addr1}" --vmipaddr2="${vm_ip_addr2}" 
