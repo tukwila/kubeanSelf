@@ -61,14 +61,10 @@ create_1node_vm(){
         rm -f $(pwd)/Vagrantfile
     fi
     vagrant init Kiowa/kubean-e2e-vm-template --box-version 0
-    sed -i "$ i\  config.vm.network \"public_network\", ip: \"${vm_ip_addr}\", bridge: \"ens192\"" Vagrantfile
+    sed -i "$ i\  config.vm.network \"public_network\", ip: \"${vm_ip_addr1}\", bridge: \"ens192\"" Vagrantfile
     vagrant up
     vagrant status
-    ping -c 5 ${vm_ip_addr}
-    sshpass -p root ssh -o StrictHostKeyChecking=no  root@${vm_ip_addr} cat /proc/version
-    # print vm origin hostname
-    echo "before deploy display hostname: "
-    sshpass -p root ssh -o StrictHostKeyChecking=no root@${vm_ip_addr} hostname
+    ping -c 5 ${vm_ip_addr1}
 }
 
 # trap vm_clean_up EXIT
@@ -79,7 +75,7 @@ create_1node_vm(){
 # ping -c 5 ${vm_ip_addr2}
 # echo "==> scp sonobuoy bin to master: "
 # sshpass -p root scp  -o StrictHostKeyChecking=no $(pwd)/test/tools/sonobuoy root@$vm_ip_addr1:/usr/bin/
-# SPRAY_JOB="ghcr.io/kubean-io/spray-job:${SPRAY_JOB_VERSION}"
+SPRAY_JOB="ghcr.io/kubean-io/spray-job:${SPRAY_JOB_VERSION}"
 
 # # prepare kubean install job yml using docker
 # cp $(pwd)/test/common/kubeanCluster.yml $(pwd)/test/kubean_sonobouy_e2e/e2e-install-cluster-sonobouy/
@@ -125,11 +121,10 @@ vagrant destroy -f sonobouyDefault
 vagrant destroy -f sonobouyDefault2
 create_1node_vm
 # prepare kubean install job yml using containerd then deploy one node cluster
-cp $(pwd)/test/common/* $(pwd)/test/kubean_functions_e2e/e2e-install-cluster/
-sed -i "s/ip:/ip: ${vm_ip_addr1}/" $(pwd)/test/kubean_functions_e2e/e2e-install-cluster/hosts-conf-cm.yml
-sed -i "s/ansible_host:/ansible_host: ${vm_ip_addr}/" $(pwd)/test/kubean_functions_e2e/e2e-install-cluster/hosts-conf-cm.yml
-sed -i "s#image:#image: ${SPRAY_JOB}#" $(pwd)/test/kubean_functions_e2e/e2e-install-cluster/kubeanClusterOps.yml
-ginkgo -v -race --fail-fast ./test/kubean_deploy_e2e/  -- --kubeconfig="${MAIN_KUBECONFIG}"
+cp $(pwd)/test/common/* $(pwd)/test/kubean_add_worker_e2e/e2e-install-1node-cluster/
+sed -i "s/ip:/ip: ${vm_ip_addr1}/" $(pwd)/test/kubean_add_worker_e2e/e2e-install-1node-cluster/hosts-conf-cm.yml
+sed -i "s/ansible_host:/ansible_host: ${vm_ip_addr1}/" $(pwd)/test/kubean_add_worker_e2e/e2e-install-1node-cluster/hosts-conf-cm.yml
+sed -i "s#image:#image: ${SPRAY_JOB}#" $(pwd)/test/kubean_add_worker_e2e/e2e-install-1node-cluster/kubeanClusterOps.yml
 # prepare add-worker-node yaml
 cp $(pwd)/test/common/kubeanCluster.yml $(pwd)/test/kubean_add_worker_e2e/add-worker-node
 cp $(pwd)/test/common/vars-conf-cm.yml $(pwd)/test/kubean_add_worker_e2e/add-worker-node

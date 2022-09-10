@@ -25,6 +25,46 @@ var _ = ginkgo.Describe("e2e add worker node operation", func() {
 	localKubeConfigPath := "add-worker-node-cluster-config"
 
 	defer ginkgo.GinkgoRecover()
+	ginkgo.Context("precondition: deploy one node cluster", func() {
+		clusterInstallYamlsPath := "e2e-install-1node-cluster"
+		kubeanNamespace := "kubean-system"
+		kubeanClusterOpsName := "e2e-1node-cluster-install"
+
+		// Create yaml for kuBean CR and related configuration
+		installYamlPath := fmt.Sprint(tools.GetKuBeanPath(), clusterInstallYamlsPath)
+		cmd := exec.Command("kubectl", "--kubeconfig="+tools.Kubeconfig, "apply", "-f", installYamlPath)
+		ginkgo.GinkgoWriter.Printf("cmd: %s\n", cmd.String())
+		var out, stderr bytes.Buffer
+		cmd.Stdout = &out
+		cmd.Stderr = &stderr
+		if err := cmd.Run(); err != nil {
+			ginkgo.GinkgoWriter.Printf("apply cmd error: %s\n", err.Error())
+			gomega.ExpectWithOffset(2, err).NotTo(gomega.HaveOccurred(), stderr.String())
+		}
+
+		// Check if the job and related pods have been created
+		time.Sleep(30 * time.Second)
+		pods, _ := kubeClient.CoreV1().Pods(kubeanNamespace).List(context.Background(), metav1.ListOptions{
+			LabelSelector: fmt.Sprintf("job-name=kubean-%s-job", kubeanClusterOpsName),
+		})
+		gomega.Expect(len(pods.Items)).NotTo(gomega.Equal(0))
+		jobPodName := pods.Items[0].Name
+
+		// Wait for kubean job-related pod status to be succeeded
+		for {
+			pod, err := kubeClient.CoreV1().Pods(kubeanNamespace).Get(context.Background(), jobPodName, metav1.GetOptions{})
+			ginkgo.GinkgoWriter.Printf("* wait for install job related pod[%s] status: %s\n", pod.Name, pod.Status.Phase)
+			gomega.ExpectWithOffset(2, err).NotTo(gomega.HaveOccurred(), "failed get job related pod")
+			podStatus := string(pod.Status.Phase)
+			if podStatus == "Succeeded" || podStatus == "Failed" {
+				ginkgo.It("kubean containerd cluster podStatus should be Succeeded", func() {
+					gomega.Expect(podStatus).To(gomega.Equal("Succeeded"))
+				})
+				break
+			}
+			time.Sleep(1 * time.Minute)
+		}
+	})
 
 	ginkgo.Context("Add one worker node into existing cluster", func() {
 		clusterInstallYamlsPath := "add-worker-node"
