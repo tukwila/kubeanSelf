@@ -119,7 +119,7 @@ SPRAY_JOB="ghcr.io/kubean-io/spray-job:${SPRAY_JOB_VERSION}"
 ## do add worker node senario
 # before addwork, one node cluster should be deployed
 trap node_clean_up EXIT
-create_1node_vm
+create_2node_vms
 # prepare kubean install job yml using containerd then deploy one node cluster
 cp $(pwd)/test/common/* $(pwd)/test/kubean_add_worker_e2e/e2e-install-1node-cluster/
 sed -i "s/ip:/ip: ${vm_ip_addr1}/" $(pwd)/test/kubean_add_worker_e2e/e2e-install-1node-cluster/hosts-conf-cm.yml

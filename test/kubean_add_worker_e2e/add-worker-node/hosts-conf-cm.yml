@@ -1,23 +1,23 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: cluster1-hosts-conf-2
+  name: cluster1-hosts-conf
   namespace: kubean-system
 data:
   hosts.yml: |
     all:
       hosts:
         node1:
-          ip: vm_ip_addr
-          access_ip: vm_ip_addr
-          ansible_host: vm_ip_addr
+          ip: vm_ip_addr1
+          access_ip: vm_ip_addr1
+          ansible_host: vm_ip_addr1
           ansible_connection: ssh
           ansible_user: root
           ansible_ssh_pass: root
         node2:
-          ip: worker_ip_addr
-          access_ip: worker_ip_addr
-          ansible_host: worker_ip_addr
+          ip: vm_ip_addr2
+          access_ip: vm_ip_addr2
+          ansible_host: vm_ip_addr2
           ansible_connection: ssh
           ansible_user: root
           ansible_ssh_pass: root
