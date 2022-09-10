@@ -113,12 +113,12 @@ SPRAY_JOB="ghcr.io/kubean-io/spray-job:${SPRAY_JOB_VERSION}"
 # sed -i "s/cluster1/cluster2/" $(pwd)/test/kubeanOps_functions_e2e/backofflimit-clusterops/vars-conf-cm.yml
 # ginkgo -v -race --fail-fast ./test/kubeanOps_functions_e2e/  -- --kubeconfig="${MAIN_KUBECONFIG}" --vmipaddr="${vm_ip_addr1}"
 
+# vagrant destroy -f sonobouyDefault
+# vagrant destroy -f sonobouyDefault2
 
 ## do add worker node senario
 # before addwork, one node cluster should be deployed
 trap node_clean_up EXIT
-vagrant destroy -f sonobouyDefault
-vagrant destroy -f sonobouyDefault2
 create_1node_vm
 # prepare kubean install job yml using containerd then deploy one node cluster
 cp $(pwd)/test/common/* $(pwd)/test/kubean_add_worker_e2e/e2e-install-1node-cluster/
