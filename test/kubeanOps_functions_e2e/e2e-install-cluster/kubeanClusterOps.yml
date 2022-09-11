@@ -10,4 +10,4 @@ spec:
   backoffLimit: 0
   actionType: shell
   action: |
-    for i in {1..15}; do echo "hello kubean ops" && sleep 10; done
+    for i in {1..15}; do echo "hello kubean ops" && sleep 20; done
