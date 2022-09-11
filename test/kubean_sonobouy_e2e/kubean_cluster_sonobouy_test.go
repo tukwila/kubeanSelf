@@ -243,10 +243,29 @@ var _ = ginkgo.Describe("e2e test cluster 1 master + 1 worker sonobouy check", f
 		}
 		_, err = kubeClient.CoreV1().Pods("kube-system").Create(context.Background(), nginx1, metav1.CreateOptions{})
 		gomega.ExpectWithOffset(2, err).NotTo(gomega.HaveOccurred(), "failed to create nginxPod1")
-		time.Sleep(1 * time.Minute)
 		_, err = kubeClient.CoreV1().Pods("kube-system").Create(context.Background(), nginx2, metav1.CreateOptions{})
 		gomega.ExpectWithOffset(2, err).NotTo(gomega.HaveOccurred(), "failed to create nginxPod2")
 		time.Sleep(1 * time.Minute)
+		for {
+			pod1, _ := kubeClient.CoreV1().Pods("kube-system").Get(context.Background(), "nginx1", metav1.GetOptions{})
+			if string(pod1.Status.Phase == "Running" {
+				ginkgo.It("nginx1 pod should work", func() {
+					gomega.Expect(string(pod1.Status.Phase)).To(gomega.Equal("Running"))
+				})
+				break
+			}
+			time.Sleep(30 * time.Second)
+		}
+		for {
+			pod1, _ := kubeClient.CoreV1().Pods("kube-system").Get(context.Background(), "nginx2", metav1.GetOptions{})
+			if string(pod1.Status.Phase == "Running" {
+				ginkgo.It("nginx2 pod should work", func() {
+					gomega.Expect(string(pod1.Status.Phase)).To(gomega.Equal("Running"))
+				})
+				break
+			}
+			time.Sleep(30 * time.Second)
+		}
 
 		pod1, _ := kubeClient.CoreV1().Pods("kube-system").Get(context.Background(), "nginx1", metav1.GetOptions{})
 		nginx1Ip := string(pod1.Status.PodIP)

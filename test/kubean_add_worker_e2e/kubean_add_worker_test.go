@@ -56,7 +56,7 @@ var _ = ginkgo.Describe("e2e add worker node operation", func() {
 				})
 				break
 			}
-			time.Sleep(30 * time.Minute)
+			time.Sleep(30 * time.Second)
 		}
 
 		// Wait for kubean job-related pod status to be succeeded
