@@ -120,6 +120,7 @@ ginkgo -v -race --fail-fast ./test/kubeanOps_functions_e2e/  -- --kubeconfig="${
 ## do add worker node senario
 # before addwork, one node cluster should be deployed
 create_2node_vms
+vagrant up
 # prepare kubean install job yml using containerd then deploy one node cluster
 cp $(pwd)/test/common/* $(pwd)/test/kubean_add_worker_e2e/e2e-install-1node-cluster/
 sed -i "s/ip:/ip: ${vm_ip_addr1}/" $(pwd)/test/kubean_add_worker_e2e/e2e-install-1node-cluster/hosts-conf-cm.yml
