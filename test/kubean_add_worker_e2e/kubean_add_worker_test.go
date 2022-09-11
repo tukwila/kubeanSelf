@@ -50,13 +50,13 @@ var _ = ginkgo.Describe("e2e add worker node operation", func() {
 				LabelSelector: fmt.Sprintf("job-name=kubean-%s-job", kubeanClusterOpsName),
 			})
 			if len(pods.Items) != 0 {
+				jobPodName = pods.Items[0].Name
 				ginkgo.It("e2e-1node-cluster-install job related pod is created: ", func() {
 					gomega.Expect(len(pods.Items)).NotTo(gomega.Equal(0))
-					jobPodName = pods.Items[0].Name
 				})
 				break
 			}
-			time.Sleep(1 * time.Minute)
+			time.Sleep(30 * time.Minute)
 		}
 
 		// Wait for kubean job-related pod status to be succeeded
