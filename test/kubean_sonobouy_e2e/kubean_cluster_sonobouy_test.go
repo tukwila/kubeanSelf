@@ -248,7 +248,7 @@ var _ = ginkgo.Describe("e2e test cluster 1 master + 1 worker sonobouy check", f
 		time.Sleep(1 * time.Minute)
 		for {
 			pod1, _ := kubeClient.CoreV1().Pods("kube-system").Get(context.Background(), "nginx1", metav1.GetOptions{})
-			if string(pod1.Status.Phase == "Running" {
+			if string(pod1.Status.Phase) == "Running" {
 				ginkgo.It("nginx1 pod should work", func() {
 					gomega.Expect(string(pod1.Status.Phase)).To(gomega.Equal("Running"))
 				})
@@ -258,7 +258,7 @@ var _ = ginkgo.Describe("e2e test cluster 1 master + 1 worker sonobouy check", f
 		}
 		for {
 			pod1, _ := kubeClient.CoreV1().Pods("kube-system").Get(context.Background(), "nginx2", metav1.GetOptions{})
-			if string(pod1.Status.Phase == "Running" {
+			if string(pod1.Status.Phase) == "Running" {
 				ginkgo.It("nginx2 pod should work", func() {
 					gomega.Expect(string(pod1.Status.Phase)).To(gomega.Equal("Running"))
 				})
