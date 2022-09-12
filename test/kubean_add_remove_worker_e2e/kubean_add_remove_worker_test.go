@@ -153,4 +153,68 @@ var _ = ginkgo.Describe("e2e add worker node operation", func() {
 		})
 	})
 
+	ginkgo.Context("remove one worker node from existing cluster", func() {
+		clusterInstallYamlsPath := "rmove-worker-node"
+		kubeanNamespace := "kubean-system"
+		kubeanClusterOpsName := "cluster1-remove-worker-ops"
+
+		installYamlPath := fmt.Sprint(tools.GetKuBeanPath(), clusterInstallYamlsPath)
+		cmd := exec.Command("kubectl", "--kubeconfig="+tools.Kubeconfig, "apply", "-f", installYamlPath)
+		ginkgo.GinkgoWriter.Printf("cmd: %s\n", cmd.String())
+		var out, stderr bytes.Buffer
+		cmd.Stdout = &out
+		cmd.Stderr = &stderr
+		if err := cmd.Run(); err != nil {
+			ginkgo.GinkgoWriter.Printf("apply cmd error: %s\n", err.Error())
+			gomega.ExpectWithOffset(2, err).NotTo(gomega.HaveOccurred(), stderr.String())
+		}
+
+		// Check if the job and related pods have been created
+		time.Sleep(30 * time.Second)
+		pods, _ := kubeClient.CoreV1().Pods(kubeanNamespace).List(context.Background(), metav1.ListOptions{
+			LabelSelector: fmt.Sprintf("job-name=kubean-%s-job", kubeanClusterOpsName),
+		})
+		gomega.Expect(len(pods.Items)).NotTo(gomega.Equal(0))
+		jobPodName := pods.Items[0].Name
+		fmt.Println(jobPodName)
+
+		// Wait for kubean job-related pod status to be succeeded
+		for {
+			pod, err := kubeClient.CoreV1().Pods(kubeanNamespace).Get(context.Background(), jobPodName, metav1.GetOptions{})
+			ginkgo.GinkgoWriter.Printf("* [rmoveWorker]wait for install job related pod[%s] status: %s\n", pod.Name, pod.Status.Phase)
+			gomega.ExpectWithOffset(2, err).NotTo(gomega.HaveOccurred(), "failed get job related pod")
+			podStatus := string(pod.Status.Phase)
+			if podStatus == "Succeeded" || podStatus == "Failed" {
+				ginkgo.It("rmoveWorker kubean cluster podStatus should be Succeeded", func() {
+					gomega.Expect(podStatus).To(gomega.Equal("Succeeded"))
+				})
+				break
+			}
+			time.Sleep(1 * time.Minute)
+		}
+	})
+
+	// after worker node removed, check kube-system pod status
+	ginkgo.Context("In remove-worker-node senario, When fetching k8 pods status", func() {
+		config, err = clientcmd.BuildConfigFromFlags("", localKubeConfigPath)
+		gomega.ExpectWithOffset(2, err).NotTo(gomega.HaveOccurred(), "failed build config")
+		kubeClient, err = kubernetes.NewForConfig(config)
+		gomega.ExpectWithOffset(2, err).NotTo(gomega.HaveOccurred(), "failed new client set")
+
+		podList, err := kubeClient.CoreV1().Pods("kube-system").List(context.TODO(), metav1.ListOptions{})
+		gomega.ExpectWithOffset(2, err).NotTo(gomega.HaveOccurred(), "failed to check kube-system pod status")
+		ginkgo.It("every removeWorker pod in kube-system should be in running status", func() {
+			for _, pod := range podList.Items {
+				fmt.Println(pod.Name, string(pod.Status.Phase))
+				gomega.Expect(string(pod.Status.Phase)).To(gomega.Equal("Running"))
+			}
+		})
+		nodeList, err := kubeClient.CoreV1().Nodes().List(context.TODO(), metav1.ListOptions{})
+		gomega.ExpectWithOffset(2, err).NotTo(gomega.HaveOccurred(), "failed to check kube-system nodeList")
+		ginkgo.It("addWorker node count should be 1", func() {
+			gomega.Expect(len(nodeList.Items)).Should(gomega.BeNumerically("==", 1))
+
+		})
+	})
+
 })
