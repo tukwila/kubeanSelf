@@ -11,9 +11,6 @@ data:
           ip: vm_ip_addr1
           access_ip: vm_ip_addr1
           ansible_host: vm_ip_addr1
-          ansible_connection: ssh
-          ansible_user: root
-          ansible_ssh_pass: root
       children:
         kube_control_plane:
           hosts:

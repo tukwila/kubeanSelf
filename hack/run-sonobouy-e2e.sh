@@ -133,13 +133,16 @@ if [ "${key_file_tag}" == "38" ]; then
     auth_yml_file="38-ssh-auth-secret.yml"
 fi
 # prepare kubean install job yml using containerd and private key then deploy one node cluster
+# cp $(pwd)/test/common/vars-conf-cm.yml $(pwd)/test/kubean_add_remove_worker_e2e/e2e-install-1node-cluster/
+# cp $(pwd)/test/common/$auth_yml_file $(pwd)/test/kubean_add_remove_worker_e2e/e2e-install-1node-cluster/ssh-auth-secret.yml
+# cp $(pwd)/test/common/$pub_key_file $(pwd)/test/kubean_add_remove_worker_e2e/e2e-install-1node-cluster/id_rsa.pub
+# sshpass -p root ssh-copy-id -f -i $(pwd)/test/kubean_add_remove_worker_e2e/e2e-install-1node-cluster/id_rsa.pub root@$vm_ip_addr1
+# sshpass -p root ssh-copy-id -f -i $(pwd)/test/kubean_add_remove_worker_e2e/e2e-install-1node-cluster/id_rsa.pub root@$vm_ip_addr2
 cp $(pwd)/test/common/vars-conf-cm.yml $(pwd)/test/kubean_add_remove_worker_e2e/e2e-install-1node-cluster/
-cp $(pwd)/test/common/$auth_yml_file $(pwd)/test/kubean_add_remove_worker_e2e/e2e-install-1node-cluster/ssh-auth-secret.yml
-cp $(pwd)/test/common/$pub_key_file $(pwd)/test/kubean_add_remove_worker_e2e/e2e-install-1node-cluster/id_rsa.pub
-sshpass -p root ssh-copy-id -f -i $(pwd)/test/kubean_add_remove_worker_e2e/e2e-install-1node-cluster/id_rsa.pub root@$vm_ip_addr1
-sshpass -p root ssh-copy-id -f -i $(pwd)/test/kubean_add_remove_worker_e2e/e2e-install-1node-cluster/id_rsa.pub root@$vm_ip_addr2
+cp $(pwd)/test/common/kubeanCluster.yml $(pwd)/test/kubean_add_remove_worker_e2e/e2e-install-1node-cluster/
 sed -i "s/vm_ip_addr1/${vm_ip_addr1}/"  $(pwd)/test/kubean_add_remove_worker_e2e/e2e-install-1node-cluster/hosts-conf-cm.yml
 sed -i "s#image:#image: ${SPRAY_JOB}#" $(pwd)/test/kubean_add_remove_worker_e2e/e2e-install-1node-cluster/kubeanClusterOps.yml
+
 # prepare add-worker-node yaml
 cp $(pwd)/test/common/kubeanCluster.yml $(pwd)/test/kubean_add_remove_worker_e2e/add-worker-node
 cp $(pwd)/test/common/vars-conf-cm.yml $(pwd)/test/kubean_add_remove_worker_e2e/add-worker-node
