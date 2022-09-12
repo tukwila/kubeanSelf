@@ -1,7 +1,6 @@
 package add_worker_e2e
 
 import (
-	"bytes"
 	"context"
 	"fmt"
 	"os"
@@ -25,7 +24,7 @@ var _ = ginkgo.Describe("e2e add worker node operation", func() {
 	localKubeConfigPath := "add-worker-node-cluster-config"
 
 	defer ginkgo.GinkgoRecover()
-	ginkgo.Context("precondition: deploy one node cluster", func() {
+	ginkgo.Context("precondition: deploy one node cluster using private key file", func() {
 		clusterInstallYamlsPath := "e2e-install-1node-cluster"
 		kubeanNamespace := "kubean-system"
 		kubeanClusterOpsName := "e2e-1node-cluster-install"
@@ -33,14 +32,8 @@ var _ = ginkgo.Describe("e2e add worker node operation", func() {
 		// Create yaml for kuBean CR and related configuration
 		installYamlPath := fmt.Sprint(tools.GetKuBeanPath(), clusterInstallYamlsPath)
 		cmd := exec.Command("kubectl", "--kubeconfig="+tools.Kubeconfig, "apply", "-f", installYamlPath)
-		ginkgo.GinkgoWriter.Printf("cmd: %s\n", cmd.String())
-		var out, stderr bytes.Buffer
-		cmd.Stdout = &out
-		cmd.Stderr = &stderr
-		if err := cmd.Run(); err != nil {
-			ginkgo.GinkgoWriter.Printf("apply cmd error: %s\n", err.Error())
-			gomega.ExpectWithOffset(2, err).NotTo(gomega.HaveOccurred(), stderr.String())
-		}
+		out, _ := tools.DoCmd(*cmd)
+		fmt.Println("out: ", out.String())
 
 		// Check if the job and related pods have been created
 		time.Sleep(30 * time.Second)
@@ -82,23 +75,25 @@ var _ = ginkgo.Describe("e2e add worker node operation", func() {
 
 		installYamlPath := fmt.Sprint(tools.GetKuBeanPath(), clusterInstallYamlsPath)
 		cmd := exec.Command("kubectl", "--kubeconfig="+tools.Kubeconfig, "apply", "-f", installYamlPath)
-		ginkgo.GinkgoWriter.Printf("cmd: %s\n", cmd.String())
-		var out, stderr bytes.Buffer
-		cmd.Stdout = &out
-		cmd.Stderr = &stderr
-		if err := cmd.Run(); err != nil {
-			ginkgo.GinkgoWriter.Printf("apply cmd error: %s\n", err.Error())
-			gomega.ExpectWithOffset(2, err).NotTo(gomega.HaveOccurred(), stderr.String())
-		}
+		out, _ := tools.DoCmd(*cmd)
+		fmt.Println("out: ", out.String())
 
 		// Check if the job and related pods have been created
 		time.Sleep(30 * time.Second)
-		pods, _ := kubeClient.CoreV1().Pods(kubeanNamespace).List(context.Background(), metav1.ListOptions{
-			LabelSelector: fmt.Sprintf("job-name=kubean-%s-job", kubeanClusterOpsName),
-		})
-		gomega.Expect(len(pods.Items)).NotTo(gomega.Equal(0))
-		jobPodName := pods.Items[0].Name
-		fmt.Println(jobPodName)
+		var jobPodName string
+		for {
+			pods, _ := kubeClient.CoreV1().Pods(kubeanNamespace).List(context.Background(), metav1.ListOptions{
+				LabelSelector: fmt.Sprintf("job-name=kubean-%s-job", kubeanClusterOpsName),
+			})
+			if len(pods.Items) != 0 {
+				jobPodName = pods.Items[0].Name
+				ginkgo.It("e2e-1node-cluster-install job related pod is created: ", func() {
+					gomega.Expect(len(pods.Items)).NotTo(gomega.Equal(0))
+				})
+				break
+			}
+			time.Sleep(30 * time.Second)
+		}
 
 		// Wait for kubean job-related pod status to be succeeded
 		for {
@@ -123,8 +118,8 @@ var _ = ginkgo.Describe("e2e add worker node operation", func() {
 		gomega.ExpectWithOffset(2, err).NotTo(gomega.HaveOccurred(), "failed to get KuBeanCluster")
 
 		// get configmap
-		kubeClient, err := kubernetes.NewForConfig(config)
-		cluster1CF, err := kubeClient.CoreV1().ConfigMaps(cluster1.Spec.KubeConfRef.NameSpace).Get(context.Background(), cluster1.Spec.KubeConfRef.Name, metav1.GetOptions{})
+		kubeClient, _ := kubernetes.NewForConfig(config)
+		cluster1CF, _ := kubeClient.CoreV1().ConfigMaps(cluster1.Spec.KubeConfRef.NameSpace).Get(context.Background(), cluster1.Spec.KubeConfRef.Name, metav1.GetOptions{})
 		err1 := os.WriteFile(localKubeConfigPath, []byte(cluster1CF.Data["config"]), 0666)
 		gomega.ExpectWithOffset(2, err1).NotTo(gomega.HaveOccurred(), "failed to write localKubeConfigPath")
 
@@ -160,23 +155,25 @@ var _ = ginkgo.Describe("e2e add worker node operation", func() {
 
 		installYamlPath := fmt.Sprint(tools.GetKuBeanPath(), clusterInstallYamlsPath)
 		cmd := exec.Command("kubectl", "--kubeconfig="+tools.Kubeconfig, "apply", "-f", installYamlPath)
-		ginkgo.GinkgoWriter.Printf("cmd: %s\n", cmd.String())
-		var out, stderr bytes.Buffer
-		cmd.Stdout = &out
-		cmd.Stderr = &stderr
-		if err := cmd.Run(); err != nil {
-			ginkgo.GinkgoWriter.Printf("apply cmd error: %s\n", err.Error())
-			gomega.ExpectWithOffset(2, err).NotTo(gomega.HaveOccurred(), stderr.String())
-		}
+		out, _ := tools.DoCmd(*cmd)
+		fmt.Println("out: ", out.String())
 
 		// Check if the job and related pods have been created
 		time.Sleep(30 * time.Second)
-		pods, _ := kubeClient.CoreV1().Pods(kubeanNamespace).List(context.Background(), metav1.ListOptions{
-			LabelSelector: fmt.Sprintf("job-name=kubean-%s-job", kubeanClusterOpsName),
-		})
-		gomega.Expect(len(pods.Items)).NotTo(gomega.Equal(0))
-		jobPodName := pods.Items[0].Name
-		fmt.Println(jobPodName)
+		var jobPodName string
+		for {
+			pods, _ := kubeClient.CoreV1().Pods(kubeanNamespace).List(context.Background(), metav1.ListOptions{
+				LabelSelector: fmt.Sprintf("job-name=kubean-%s-job", kubeanClusterOpsName),
+			})
+			if len(pods.Items) != 0 {
+				jobPodName = pods.Items[0].Name
+				ginkgo.It("cluster1-remove-worker-ops job related pod is created: ", func() {
+					gomega.Expect(len(pods.Items)).NotTo(gomega.Equal(0))
+				})
+				break
+			}
+			time.Sleep(30 * time.Second)
+		}
 
 		// Wait for kubean job-related pod status to be succeeded
 		for {

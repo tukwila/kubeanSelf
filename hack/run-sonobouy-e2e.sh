@@ -17,6 +17,7 @@ HOST_CLUSTER_NAME=${1:-"kubean-host"}
 SPRAY_JOB_VERSION=${2:-latest}
 vm_ip_addr1=${3:-"10.6.127.33"}
 vm_ip_addr2=${4:-"10.6.127.36"}
+private_key_file=${5:="default_id_rsa.pub"}
 MAIN_KUBECONFIG=${MAIN_KUBECONFIG:-"${KUBECONFIG_PATH}/${HOST_CLUSTER_NAME}.config"}
 EXIT_CODE=0
 echo "==> current dir: "$(pwd)
@@ -119,8 +120,10 @@ sshpass -p root ssh -o StrictHostKeyChecking=no root@${vm_ip_addr1} cat /proc/ve
 ## do add worker node senario
 # before addwork, one node cluster should be deployed
 create_2node_vms
-# prepare kubean install job yml using containerd then deploy one node cluster
-cp $(pwd)/test/common/* $(pwd)/test/kubean_add_remove_worker_e2e/e2e-install-1node-cluster/
+# prepare kubean install job yml using containerd and private key then deploy one node cluster
+cp $(pwd)/test/common/kubeanCluster.yml $(pwd)/test/kubean_add_remove_worker_e2e/e2e-install-1node-cluster/
+cp $(pwd)/test/common/vars-conf-cm.yml $(pwd)/test/kubean_add_remove_worker_e2e/e2e-install-1node-cluster/
+cp $(pwd)/test/tools/$private_key_file $(pwd)/test/kubean_add_remove_worker_e2e/e2e-install-1node-cluster/
 sed -i "s/ip:/ip: ${vm_ip_addr1}/" $(pwd)/test/kubean_add_remove_worker_e2e/e2e-install-1node-cluster/hosts-conf-cm.yml
 sed -i "s/ansible_host:/ansible_host: ${vm_ip_addr1}/" $(pwd)/test/kubean_add_remove_worker_e2e/e2e-install-1node-cluster/hosts-conf-cm.yml
 sed -i "s#image:#image: ${SPRAY_JOB}#" $(pwd)/test/kubean_add_remove_worker_e2e/e2e-install-1node-cluster/kubeanClusterOps.yml
