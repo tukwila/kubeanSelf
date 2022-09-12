@@ -17,7 +17,7 @@ HOST_CLUSTER_NAME=${1:-"kubean-host"}
 SPRAY_JOB_VERSION=${2:-latest}
 vm_ip_addr1=${3:-"10.6.127.33"}
 vm_ip_addr2=${4:-"10.6.127.36"}
-private_key_file=${5:="default_id_rsa.pub"}
+key_file_tag=${5:="default"}
 MAIN_KUBECONFIG=${MAIN_KUBECONFIG:-"${KUBECONFIG_PATH}/${HOST_CLUSTER_NAME}.config"}
 EXIT_CODE=0
 echo "==> current dir: "$(pwd)
@@ -120,10 +120,22 @@ sshpass -p root ssh -o StrictHostKeyChecking=no root@${vm_ip_addr1} cat /proc/ve
 ## do add worker node senario
 # before addwork, one node cluster should be deployed
 create_2node_vms
+if [ "${key_file_tag}" == "default" ]; then
+    pub_key_file="default_id_rsa.pub"
+    auth_yml_file="default-ssh-auth-secret.yml"
+fi
+if [ "${key_file_tag}" == "34" ]; then
+    pub_key_file="34_id_rsa.pub"
+    auth_yml_file="34-ssh-auth-secret.yml"
+fi
+if [ "${key_file_tag}" == "38" ]; then
+    pub_key_file="38_id_rsa.pub"
+    auth_yml_file="38-ssh-auth-secret.yml"
+fi
 # prepare kubean install job yml using containerd and private key then deploy one node cluster
-cp $(pwd)/test/common/kubeanCluster.yml $(pwd)/test/kubean_add_remove_worker_e2e/e2e-install-1node-cluster/
 cp $(pwd)/test/common/vars-conf-cm.yml $(pwd)/test/kubean_add_remove_worker_e2e/e2e-install-1node-cluster/
-cp $(pwd)/test/tools/$private_key_file $(pwd)/test/kubean_add_remove_worker_e2e/e2e-install-1node-cluster/id_rsa.pub
+cp $(pwd)/test/common/$auth_yml_file $(pwd)/test/kubean_add_remove_worker_e2e/e2e-install-1node-cluster/ssh-auth-secret.yml
+cp $(pwd)/test/tools/$pub_key_file $(pwd)/test/kubean_add_remove_worker_e2e/e2e-install-1node-cluster/id_rsa.pub
 sshpass -p root ssh-copy-id -f -i $(pwd)/test/kubean_add_remove_worker_e2e/e2e-install-1node-cluster/id_rsa.pub root@$vm_ip_addr1
 sshpass -p root ssh-copy-id -f -i $(pwd)/test/kubean_add_remove_worker_e2e/e2e-install-1node-cluster/id_rsa.pub root@$vm_ip_addr2
 sed -i "s/vm_ip_addr1/${vm_ip_addr1}/"  $(pwd)/test/kubean_add_remove_worker_e2e/e2e-install-1node-cluster/hosts-conf-cm.yml

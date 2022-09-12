@@ -60,12 +60,12 @@ fi
 if [ "${RUNNER_NAME}" == "kubean-actions-runner2" ]; then
     vm_ip_addr1="10.6.127.35"
     vm_ip_addr2="10.6.127.37"
-    private_key_file="34_id_rsa.pub"
+    key_file_tag="34"
 fi
 if [ "${RUNNER_NAME}" == "kubean-actions-runner3" ]; then
     vm_ip_addr1="10.6.127.39"
     vm_ip_addr2="10.6.127.40"
-    private_key_file="38_id_rsa.pub"
+    key_file_tag="38"
 fi
 if [ "${RUNNER_NAME}" == "kubean-actions-runner4" ]; then
     vm_ip_addr1="10.6.127.42"
@@ -74,13 +74,13 @@ fi
 if [ "${RUNNER_NAME}" == "debug" ]; then
     vm_ip_addr1="10.6.127.45"
     vm_ip_addr2="10.6.127.46"
-    private_key_file="default_id_rsa.pub"
+    key_file_tag="default"
 fi
 
 ###### e2e logic ########
 #trap clean_up EXIT
 ./hack/local-up-kindcluster.sh "${TARGET_VERSION}" "${IMAGE_VERSION}" "${HELM_REPO}" "${IMG_REPO}" "kindest/node:v1.21.1" "${CLUSTER_PREFIX}"-host
-./hack/run-sonobouy-e2e.sh "${CLUSTER_PREFIX}"-host $SPRAY_JOB_VERSION $vm_ip_addr1 $vm_ip_addr2 $private_key_file
+./hack/run-sonobouy-e2e.sh "${CLUSTER_PREFIX}"-host $SPRAY_JOB_VERSION $vm_ip_addr1 $vm_ip_addr2 $key_file_tag
 
 ret=$?
 if [ ${ret} -ne 0 ]; then
