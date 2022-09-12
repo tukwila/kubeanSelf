@@ -70,11 +70,11 @@ fi
 if [ "${RUNNER_NAME}" == "kubean-actions-runner4" ]; then
     vm_ip_addr1="10.6.127.42"
     vm_ip_addr2="10.6.127.43"
-    private_key_file="default_id_rsa.pub"
 fi
 if [ "${RUNNER_NAME}" == "debug" ]; then
     vm_ip_addr1="10.6.127.45"
     vm_ip_addr2="10.6.127.46"
+    private_key_file="default_id_rsa.pub"
 fi
 
 ###### e2e logic ########
