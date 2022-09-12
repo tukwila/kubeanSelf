@@ -130,12 +130,11 @@ cp $(pwd)/test/common/vars-conf-cm.yml $(pwd)/test/kubean_add_remove_worker_e2e/
 sed -i "s/vm_ip_addr1/${vm_ip_addr1}/" $(pwd)/test/kubean_add_remove_worker_e2e/add-worker-node/hosts-conf-cm.yml
 sed -i "s/vm_ip_addr2/${vm_ip_addr2}/" $(pwd)/test/kubean_add_remove_worker_e2e/add-worker-node/hosts-conf-cm.yml
 sed -i "s#image:#image: ${SPRAY_JOB}#" $(pwd)/test/kubean_add_remove_worker_e2e/add-worker-node/kubeanClusterOps.yml
-ginkgo -v -race --fail-fast ./test/kubean_add_remove_worker_e2e/  -- --kubeconfig="${MAIN_KUBECONFIG}" --vmipaddr="${vm_ip_addr1}" --vmipaddr2="${vm_ip_addr2}" 
-
 ## do remove worker node senario
 cp $(pwd)/test/common/kubeanCluster.yml $(pwd)/test/kubean_add_remove_worker_e2e/remove-worker-node
 cp $(pwd)/test/common/vars-conf-cm.yml $(pwd)/test/kubean_add_remove_worker_e2e/remove-worker-node
 sed -i "s/vm_ip_addr1/${vm_ip_addr1}/" $(pwd)/test/kubean_add_remove_worker_e2e/remove-worker-node/hosts-conf-cm.yml
 sed -i "s/vm_ip_addr2/${vm_ip_addr2}/" $(pwd)/test/kubean_add_remove_worker_e2e/remove-worker-node/hosts-conf-cm.yml
 sed -i "s#image:#image: ${SPRAY_JOB}#" $(pwd)/test/kubean_add_remove_worker_e2e/remove-worker-node/kubeanClusterOps.yml
+
 ginkgo -v -race --fail-fast ./test/kubean_add_remove_worker_e2e/  -- --kubeconfig="${MAIN_KUBECONFIG}" --vmipaddr="${vm_ip_addr1}" --vmipaddr2="${vm_ip_addr2}" 
