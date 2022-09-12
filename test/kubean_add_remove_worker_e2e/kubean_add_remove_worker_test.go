@@ -154,7 +154,7 @@ var _ = ginkgo.Describe("e2e add worker node operation", func() {
 	})
 
 	ginkgo.Context("remove one worker node from existing cluster", func() {
-		clusterInstallYamlsPath := "rmove-worker-node"
+		clusterInstallYamlsPath := "remove-worker-node"
 		kubeanNamespace := "kubean-system"
 		kubeanClusterOpsName := "cluster1-remove-worker-ops"
 
