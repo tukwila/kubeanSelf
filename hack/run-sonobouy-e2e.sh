@@ -123,9 +123,10 @@ create_2node_vms
 # prepare kubean install job yml using containerd and private key then deploy one node cluster
 cp $(pwd)/test/common/kubeanCluster.yml $(pwd)/test/kubean_add_remove_worker_e2e/e2e-install-1node-cluster/
 cp $(pwd)/test/common/vars-conf-cm.yml $(pwd)/test/kubean_add_remove_worker_e2e/e2e-install-1node-cluster/
-cp $(pwd)/test/tools/$private_key_file $(pwd)/test/kubean_add_remove_worker_e2e/e2e-install-1node-cluster/
-sed -i "s/ip:/ip: ${vm_ip_addr1}/" $(pwd)/test/kubean_add_remove_worker_e2e/e2e-install-1node-cluster/hosts-conf-cm.yml
-sed -i "s/ansible_host:/ansible_host: ${vm_ip_addr1}/" $(pwd)/test/kubean_add_remove_worker_e2e/e2e-install-1node-cluster/hosts-conf-cm.yml
+cp $(pwd)/test/tools/$private_key_file $(pwd)/test/kubean_add_remove_worker_e2e/e2e-install-1node-cluster/id_rsa.pub
+sshpass -p root ssh-copy-id -i $(pwd)/test/kubean_add_remove_worker_e2e/e2e-install-1node-cluster/id_rsa.pub root@${vm_ip_addr1}
+sshpass -p root ssh-copy-id -i $(pwd)/test/kubean_add_remove_worker_e2e/e2e-install-1node-cluster/id_rsa.pub root@${vm_ip_addr2}
+sed -i "s/vm_ip_addr1/${vm_ip_addr1}/"  $(pwd)/test/kubean_add_remove_worker_e2e/e2e-install-1node-cluster/hosts-conf-cm.yml
 sed -i "s#image:#image: ${SPRAY_JOB}#" $(pwd)/test/kubean_add_remove_worker_e2e/e2e-install-1node-cluster/kubeanClusterOps.yml
 # prepare add-worker-node yaml
 cp $(pwd)/test/common/kubeanCluster.yml $(pwd)/test/kubean_add_remove_worker_e2e/add-worker-node
