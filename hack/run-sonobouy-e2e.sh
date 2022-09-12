@@ -135,7 +135,7 @@ fi
 # prepare kubean install job yml using containerd and private key then deploy one node cluster
 cp $(pwd)/test/common/vars-conf-cm.yml $(pwd)/test/kubean_add_remove_worker_e2e/e2e-install-1node-cluster/
 cp $(pwd)/test/common/$auth_yml_file $(pwd)/test/kubean_add_remove_worker_e2e/e2e-install-1node-cluster/ssh-auth-secret.yml
-cp $(pwd)/test/tools/$pub_key_file $(pwd)/test/kubean_add_remove_worker_e2e/e2e-install-1node-cluster/id_rsa.pub
+cp $(pwd)/test/common/$pub_key_file $(pwd)/test/kubean_add_remove_worker_e2e/e2e-install-1node-cluster/id_rsa.pub
 sshpass -p root ssh-copy-id -f -i $(pwd)/test/kubean_add_remove_worker_e2e/e2e-install-1node-cluster/id_rsa.pub root@$vm_ip_addr1
 sshpass -p root ssh-copy-id -f -i $(pwd)/test/kubean_add_remove_worker_e2e/e2e-install-1node-cluster/id_rsa.pub root@$vm_ip_addr2
 sed -i "s/vm_ip_addr1/${vm_ip_addr1}/"  $(pwd)/test/kubean_add_remove_worker_e2e/e2e-install-1node-cluster/hosts-conf-cm.yml
