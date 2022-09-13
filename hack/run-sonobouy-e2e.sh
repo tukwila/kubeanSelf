@@ -81,10 +81,7 @@ check_yq_intalled(){
 }
 
 generate_rsa_key(){
-    if [ -f ~/.ssh/id_rsa ]; then
-        rm -f ~/.ssh/id_rsa*
-    fi
-    ssh-keygen -f id_rsa -t rsa -N ''
+    echo 'y'| ssh-keygen -f id_rsa -t rsa -N ''
 }
 
 trap vm_clean_up EXIT
