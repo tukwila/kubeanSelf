@@ -25,7 +25,7 @@ var _ = ginkgo.Describe("e2e add worker node operation", func() {
 
 	defer ginkgo.GinkgoRecover()
 	ginkgo.Context("precondition: deploy one node cluster using private key file", func() {
-		clusterInstallYamlsPath := "e2e-install-1node-cluster"
+		clusterInstallYamlsPath := "e2e-install-1node-cluster-prikey"
 		kubeanNamespace := "kubean-system"
 		kubeanClusterOpsName := "e2e-1node-cluster-install"
 
