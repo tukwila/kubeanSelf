@@ -140,8 +140,8 @@ generate_rsa_key
 ID_RSA=$(cat ~/.ssh/id_rsa|base64 -w 0)
 sed -i "s/ID_RSA/${ID_RSA}/" $(pwd)/test/kubean_add_remove_worker_e2e/e2e-install-1node-cluster-prikey/ssh-auth-secret.yml
 cp $(pwd)/test/common/vars-conf-cm.yml $(pwd)/test/kubean_add_remove_worker_e2e/e2e-install-1node-cluster-prikey/
-sshpass -p root ssh-copy-id -f -i ~/.ssh/id_rsa/id_rsa.pub root@$vm_ip_addr1
-sshpass -p root ssh-copy-id -f -i ~/.ssh/id_rsa/id_rsa.pub root@$vm_ip_addr2
+sshpass -p root ssh-copy-id -f -i ~/.ssh/id_rsa.pub root@$vm_ip_addr1
+sshpass -p root ssh-copy-id -f -i ~/.ssh/id_rsa.pub root@$vm_ip_addr2
 sed -i "s/vm_ip_addr1/${vm_ip_addr1}/"  $(pwd)/test/kubean_add_remove_worker_e2e/e2e-install-1node-cluster-prikey/hosts-conf-cm.yml
 sed -i "s#image:#image: ${SPRAY_JOB}#" $(pwd)/test/kubean_add_remove_worker_e2e/e2e-install-1node-cluster-prikey/kubeanClusterOps.yml
 # prepare add-worker-node yaml
