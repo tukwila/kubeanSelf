@@ -137,7 +137,7 @@ sshpass -p root ssh -o StrictHostKeyChecking=no root@${vm_ip_addr1} cat /proc/ve
 ## step3 remove worker node with containerd and private key
 # prepare kubean install job yml files
 generate_rsa_key
-ID_RSA=$(cat ~/.ssh/id_rsa|base64)
+ID_RSA=$(cat ~/.ssh/id_rsa|base64 -w 0)
 sed -i "s/ID_RSA/${ID_RSA}/" $(pwd)/test/kubean_add_remove_worker_e2e/e2e-install-1node-cluster-prikey/ssh-auth-secret.yml
 cp $(pwd)/test/common/vars-conf-cm.yml $(pwd)/test/kubean_add_remove_worker_e2e/e2e-install-1node-cluster-prikey/
 sshpass -p root ssh-copy-id -f -i ~/.ssh/id_rsa/id_rsa.pub root@$vm_ip_addr1
