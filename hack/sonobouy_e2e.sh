@@ -16,6 +16,7 @@ HELM_REPO=${3:-"https://kubean-io.github.io/kubean-helm-chart"}
 IMG_REPO=${4:-"ghcr.io/kubean-io"}
 SPRAY_JOB_VERSION=${5:-latest}
 RUNNER_NAME=${6:-"kubean-actions-runner1"} 
+ID_RSA=${7:-""} 
 EXIT_CODE=0
 
 CLUSTER_PREFIX=kubean-"${IMAGE_VERSION}"-$RANDOM
@@ -56,6 +57,7 @@ echo "RUNNER_NAME: "$RUNNER_NAME
 if [ "${RUNNER_NAME}" == "kubean-actions-runner1" ]; then
     vm_ip_addr1="10.6.127.33"
     vm_ip_addr2="10.6.127.36"
+    key_file_tag="32"
 fi
 if [ "${RUNNER_NAME}" == "kubean-actions-runner2" ]; then
     vm_ip_addr1="10.6.127.35"
@@ -80,7 +82,7 @@ fi
 ###### e2e logic ########
 #trap clean_up EXIT
 ./hack/local-up-kindcluster.sh "${TARGET_VERSION}" "${IMAGE_VERSION}" "${HELM_REPO}" "${IMG_REPO}" "kindest/node:v1.21.1" "${CLUSTER_PREFIX}"-host
-./hack/run-sonobouy-e2e.sh "${CLUSTER_PREFIX}"-host $SPRAY_JOB_VERSION $vm_ip_addr1 $vm_ip_addr2 $key_file_tag
+./hack/run-sonobouy-e2e.sh "${CLUSTER_PREFIX}"-host $SPRAY_JOB_VERSION $vm_ip_addr1 $vm_ip_addr2 $key_file_tag $ID_RSA
 
 ret=$?
 if [ ${ret} -ne 0 ]; then

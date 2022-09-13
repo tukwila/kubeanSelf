@@ -227,38 +227,6 @@ var _ = ginkgo.Describe("Containerd: e2e test cluster operation", func() {
 		})
 	})
 
-	// get KuBeanClusterOps to if validate hasModified: true
-	// config, err = clientcmd.BuildConfigFromFlags("", tools.Kubeconfig)
-	// gomega.ExpectWithOffset(2, err).NotTo(gomega.HaveOccurred(), "failed build config")
-	// clusterClientOpsSet, err := kubeanClusterOpsClientSet.NewForConfig(config)
-	// gomega.ExpectWithOffset(2, err).NotTo(gomega.HaveOccurred(), "failed new client set")
-	// clusterOpsName := "e2e-cluster1-install"
-	// clusterOps, err := clusterClientOpsSet.KubeanclusteropsV1alpha1().KuBeanClusterOps().Get(context.Background(), clusterOpsName, metav1.GetOptions{})
-	// fmt.Println("before patch KuBeanClusterOps.Spec.Action: ", clusterOps.Spec.Action)
-	// gomega.ExpectWithOffset(2, err).NotTo(gomega.HaveOccurred(), "failed to check KuBeanClusterOps Spec.hasModified")
-	// ginkgo.Context("Containerd: when fetching KuBeanClusterOps", func() {
-	// 	clusterOps.Spec.Action = "e2etest"
-	// 	newClusterOps, err := clusterClientOpsSet.KubeanclusteropsV1alpha1().KuBeanClusterOps().Update(context.Background(), clusterOps, metav1.UpdateOptions{})
-	// 	time.Sleep(30 * time.Second)
-	// 	fmt.Println(newClusterOps.Spec.Action)
-	// 	ginkgo.It("KuBeanClusterOps.Spec.Action update success", func() {
-	// 		gomega.Expect(err).Should(gomega.BeNil())
-	// 		gomega.Expect(string(newClusterOps.Spec.Action)).Should(gomega.ContainSubstring("e2etest"))
-	// 	})
-	// 	for {
-	// 		updatedClusterOps, _ := clusterClientOpsSet.KubeanclusteropsV1alpha1().KuBeanClusterOps().Get(context.Background(), clusterOpsName, metav1.GetOptions{})
-	// 		hasModified := updatedClusterOps.Status.HasModified
-	// 		if hasModified {
-	// 			ginkgo.It("KuBeanClusterOps.Status.hasModified should be true", func() {
-	// 				gomega.Expect(hasModified).Should(gomega.BeTrue())
-	// 			})
-	// 			break
-	// 		} else {
-	// 			time.Sleep(10 * time.Second)
-	// 		}
-	// 	}
-	// })
-
 	// do cluster reset
 	ginkgo.Context("Containerd: when reset a cluster", func() {
 		clusterInstallYamlsPath := "e2e-reset-cluster"
