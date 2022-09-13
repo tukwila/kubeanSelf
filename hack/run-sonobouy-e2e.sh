@@ -82,8 +82,8 @@ check_yq_intalled(){
 }
 
 trap vm_clean_up EXIT
-create_2node_vms
-sshpass -p root ssh -o StrictHostKeyChecking=no root@${vm_ip_addr1} cat /proc/version
+# create_2node_vms
+# sshpass -p root ssh -o StrictHostKeyChecking=no root@${vm_ip_addr1} cat /proc/version
 
 # echo "==> scp sonobuoy bin to master: "
 # sshpass -p root scp  -o StrictHostKeyChecking=no $(pwd)/test/tools/sonobuoy root@$vm_ip_addr1:/usr/bin/
