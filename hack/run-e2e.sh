@@ -69,4 +69,4 @@ sed -i "$ a\    override_system_hostname: false" $(pwd)/test/kubean_functions_e2
 
 # Run cluster function e2e
 ginkgo -v -race --fail-fast ./test/kubean_deploy_e2e/  -- --kubeconfig="${MAIN_KUBECONFIG}"
-ginkgo -v -race --fail-fast ./test/kubean_functions_e2e/  -- --kubeconfig="${MAIN_KUBECONFIG}" --vmipaddr="${vm_ip_addr}"
+ginkgo -v -race --fail-fast --focus='\[test\]' ./test/kubean_functions_e2e/  -- --kubeconfig="${MAIN_KUBECONFIG}" --vmipaddr="${vm_ip_addr}"

@@ -32,13 +32,14 @@ var _ = ginkgo.Describe("Containerd: e2e test cluster operation", func() {
 
 	defer ginkgo.GinkgoRecover()
 
-	ginkgo.Context("Containerd: when install a cluster", func() {
+	ginkgo.Context("[test]Containerd: when install a cluster", func() {
 		clusterInstallYamlsPath := "e2e-install-cluster"
 		kubeanNamespace := "kubean-system"
 		kubeanClusterOpsName := "e2e-cluster1-install"
 
 		// Create yaml for kuBean CR and related configuration
 		installYamlPath := fmt.Sprint(tools.GetKuBeanPath(), clusterInstallYamlsPath)
+		// do cluster deploy in containerd mode
 		cmd := exec.Command("kubectl", "--kubeconfig="+tools.Kubeconfig, "apply", "-f", installYamlPath)
 		ginkgo.GinkgoWriter.Printf("cmd: %s\n", cmd.String())
 		var out, stderr bytes.Buffer
@@ -228,7 +229,7 @@ var _ = ginkgo.Describe("Containerd: e2e test cluster operation", func() {
 	})
 
 	// do cluster reset
-	ginkgo.Context("Containerd: when reset a cluster", func() {
+	ginkgo.Context("[test]Containerd: when reset a cluster", func() {
 		clusterInstallYamlsPath := "e2e-reset-cluster"
 		kubeanNamespace := "kubean-system"
 		kubeanClusterOpsName := "e2e-cluster1-reset"
@@ -271,9 +272,50 @@ var _ = ginkgo.Describe("Containerd: e2e test cluster operation", func() {
 			}
 			time.Sleep(1 * time.Minute)
 		}
+
+		// after reest login node， check node functions
+		ginkgo.Context("Containerd: login node, check node reset:", func() {
+			masterSSH := fmt.Sprintf("root@%s", tools.Vmipaddr)
+			masterCmd := exec.Command("sshpass", "-p", "root", "ssh", "-o", "UserKnownHostsFile=/dev/null", "-o", "StrictHostKeyChecking=no", masterSSH, "kubectl")
+			out, _ := tools.DoCmd(*masterCmd)
+			ginkgo.It("5.1 kubectl check: execute kubectl, output should contain command not found", func() {
+				gomega.Expect(out.String()).Should(gomega.ContainSubstring("command not found"))
+			})
+
+			masterCmd = exec.Command("sshpass", "-p", "root", "ssh", "-o", "UserKnownHostsFile=/dev/null", "-o", "StrictHostKeyChecking=no", masterSSH, "systemctl", "status", "containerd.service")
+			out1, _ := tools.DoCmd(*masterCmd)
+			ginkgo.It("5.2 CRI check: execute systemctl status containerd.service", func() {
+				gomega.Expect(out1.String()).Should(gomega.ContainSubstring("inactive"))
+				gomega.Expect(out1.String()).Should(gomega.ContainSubstring("dead"))
+			})
+
+			masterCmd = exec.Command("sshpass", "-p", "root", "ssh", "-o", "UserKnownHostsFile=/dev/null", "-o", "StrictHostKeyChecking=no", masterSSH, "ls", "-al", "/opt")
+			out2, _ := tools.DoCmd(*masterCmd)
+			ginkgo.It("5.3 CNI check1: execute ls -al /opt, the output should not contain cni", func() {
+				gomega.Expect(out2.String()).ShouldNot(gomega.ContainSubstring("cni"))
+			})
+
+			masterCmd = exec.Command("sshpass", "-p", "root", "ssh", "-o", "UserKnownHostsFile=/dev/null", "-o", "StrictHostKeyChecking=no", masterSSH, "ls", "-al", "/etc")
+			out3, _ := tools.DoCmd(*masterCmd)
+			ginkgo.It("5.4 CNI check2: execute ls -al /etc,the output should not contain cni", func() {
+				gomega.Expect(out3.String()).ShouldNot(gomega.ContainSubstring("cni"))
+			})
+
+			masterCmd = exec.Command("sshpass", "-p", "root", "ssh", "-o", "UserKnownHostsFile=/dev/null", "-o", "StrictHostKeyChecking=no", masterSSH, "ls", "-al", "/root")
+			out4, _ := tools.DoCmd(*masterCmd)
+			ginkgo.It("5.6 k8s config file check: execute ls -al /root, the output should not contain .kube", func() {
+				gomega.Expect(out4.String()).ShouldNot(gomega.ContainSubstring(".kube"))
+			})
+
+			masterCmd = exec.Command("sshpass", "-p", "root", "ssh", "-o", "UserKnownHostsFile=/dev/null", "-o", "StrictHostKeyChecking=no", masterSSH, "ls", "-al", "/usr/local/bin")
+			out5, _ := tools.DoCmd(*masterCmd)
+			ginkgo.It("5.7 kubelet check: execute ls -al /usr/local/bin, the output should not contain kubelet", func() {
+				gomega.Expect(out5.String()).ShouldNot(gomega.ContainSubstring("kubelet"))
+			})
+		})
 	})
 
-	// do cluster installation within docker
+	// do cluster reinstallation within docker
 	ginkgo.Context("Docker: when install a cluster using docker", func() {
 		clusterInstallYamlsPath := "e2e-install-cluster-docker"
 		kubeanNamespace := "kubean-system"

@@ -29,7 +29,7 @@ var _ = ginkgo.Describe("e2e test cluster 1 master + 1 worker sonobouy check", f
 	defer ginkgo.GinkgoRecover()
 
 	// do cluster installation within docker
-	ginkgo.Context("when install a sonobouy cluster using docker", func() {
+	ginkgo.Context("[test]when install a sonobouy cluster using docker", func() {
 		clusterInstallYamlsPath := "e2e-install-cluster-sonobouy"
 		kubeanNamespace := "kubean-system"
 		kubeanClusterOpsName := "e2e-cluster1-install-sonobouy"
@@ -165,8 +165,8 @@ var _ = ginkgo.Describe("e2e test cluster 1 master + 1 worker sonobouy check", f
 		})
 	})
 
-	ginkgo.Context("check CNI: calico installed", func() {
-		// 1. check calico/controller pods are running
+	ginkgo.Context("[test]Support CNI: Calico", func() {
+		//4. check calico (calico-node and calico-kube-controller)pod status: pod status should be "Running"
 		config, _ = clientcmd.BuildConfigFromFlags("", localKubeConfigPath)
 		kubeClient, _ = kubernetes.NewForConfig(config)
 		podList, _ := kubeClient.CoreV1().Pods("kube-system").List(context.TODO(), metav1.ListOptions{})
@@ -178,23 +178,23 @@ var _ = ginkgo.Describe("e2e test cluster 1 master + 1 worker sonobouy check", f
 			}
 		}
 
-		// 2. check calico binary files in /opt/cni/bin
+		//5. check folder /opt/cni/bin contains  file "calico" and "calico-ipam" are exist in both master and worker node
 		masterSSH := fmt.Sprintf("root@%s", tools.Vmipaddr)
 		workerSSH := fmt.Sprintf("root@%s", tools.Vmipaddr2)
 		masterCmd := exec.Command("sshpass", "-p", "root", "ssh", "-o", "UserKnownHostsFile=/dev/null", "-o", "StrictHostKeyChecking=no", masterSSH, "ls", "/opt/cni/bin/")
 		workerCmd := exec.Command("sshpass", "-p", "root", "ssh", "-o", "UserKnownHostsFile=/dev/null", "-o", "StrictHostKeyChecking=no", workerSSH, "ls", "/opt/cni/bin/")
 		out1, _ := tools.DoCmd(*masterCmd)
 		fmt.Println("out1: ", out1.String())
-		ginkgo.It("master calico checking: ", func() {
+		ginkgo.It("master /opt/cni/bin checking: ", func() {
 			gomega.Expect(out1.String()).Should(gomega.ContainSubstring("calico"))
 		})
 		out2, _ := tools.DoCmd(*workerCmd)
 		fmt.Println("out2: ", out2.String())
-		ginkgo.It("worker calico checking: ", func() {
+		ginkgo.It("worker /opt/cni/bin checking: ", func() {
 			gomega.Expect(out2.String()).Should(gomega.ContainSubstring("calico"))
 		})
 
-		// 3. check calicoctl
+		// check calicoctl
 		masterCmd = exec.Command("sshpass", "-p", "root", "ssh", "-o", "UserKnownHostsFile=/dev/null", "-o", "StrictHostKeyChecking=no", masterSSH, "calicoctl", "version")
 		out3, _ := tools.DoCmd(*masterCmd)
 		fmt.Println("out1: ", out3.String())
@@ -204,14 +204,24 @@ var _ = ginkgo.Describe("e2e test cluster 1 master + 1 worker sonobouy check", f
 			gomega.Expect(out3.String()).Should(gomega.ContainSubstring("kubespray,kubeadm,kdd"))
 		})
 
-		// 4. create 2 new pods, pod can ping pod, node ping pod
+		//6. check pod connection:
 		config, err = clientcmd.BuildConfigFromFlags("", localKubeConfigPath)
 		gomega.ExpectWithOffset(2, err).NotTo(gomega.HaveOccurred(), "failed build config")
 		kubeClient, err = kubernetes.NewForConfig(config)
 		gomega.ExpectWithOffset(2, err).NotTo(gomega.HaveOccurred(), "failed new client set")
+		//6.1. create a deployment of nginx1 on master, on namespace ns1: set replicaset to 1(here call the pod as pod1)
+		// 6.1.1 prepare 2 namespaces
+		//获取namespaces信息
+		namespaceList, err := kubeClient.CoreV1().Namespaces().List(context.TODO(), metav1.ListOptions{})
+		gomega.ExpectWithOffset(2, err).NotTo(gomega.HaveOccurred(), "failed to get namespace")
+		for _, namespace := range namespaceList.Items {
+			fmt.Println("namespace.Name: ", namespace.Name)
+		}
+		// 6.1.2 create 2 pod in different namespace and nodes
 		nginx1 := &corev1.Pod{
 			ObjectMeta: metav1.ObjectMeta{
-				Name: "nginx1",
+				Name:      "nginx1",
+				Namespace: "default",
 			},
 			Spec: corev1.PodSpec{
 				Containers: []corev1.Container{
@@ -223,11 +233,14 @@ var _ = ginkgo.Describe("e2e test cluster 1 master + 1 worker sonobouy check", f
 							},
 						}},
 				},
+				NodeSelector: map[string]string{"name": "node1"},
 			},
 		}
+		//6.2. create a deployment of nginx2 on worker, on namespace ns2: set replicaset to 1(here call the pod as pod2)
 		nginx2 := &corev1.Pod{
 			ObjectMeta: metav1.ObjectMeta{
-				Name: "nginx2",
+				Name:      "nginx2",
+				Namespace: "kube-system",
 			},
 			Spec: corev1.PodSpec{
 				Containers: []corev1.Container{
@@ -239,6 +252,7 @@ var _ = ginkgo.Describe("e2e test cluster 1 master + 1 worker sonobouy check", f
 							},
 						}},
 				},
+				NodeSelector: map[string]string{"name": "ndoe2"},
 			},
 		}
 		_, err = kubeClient.CoreV1().Pods("kube-system").Create(context.Background(), nginx1, metav1.CreateOptions{})
