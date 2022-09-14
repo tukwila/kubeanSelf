@@ -32,7 +32,7 @@ var _ = ginkgo.Describe("Containerd: e2e test cluster operation", func() {
 
 	defer ginkgo.GinkgoRecover()
 
-	ginkgo.Context("[test]Containerd: when install a cluster", func() {
+	ginkgo.Context("Containerd: when install a cluster", func() {
 		clusterInstallYamlsPath := "e2e-install-cluster"
 		kubeanNamespace := "kubean-system"
 		kubeanClusterOpsName := "e2e-cluster1-install"
@@ -229,7 +229,7 @@ var _ = ginkgo.Describe("Containerd: e2e test cluster operation", func() {
 	})
 
 	// do cluster reset
-	ginkgo.Context("[test]Containerd: when reset a cluster", func() {
+	ginkgo.Context("Containerd: when reset a cluster", func() {
 		clusterInstallYamlsPath := "e2e-reset-cluster"
 		kubeanNamespace := "kubean-system"
 		kubeanClusterOpsName := "e2e-cluster1-reset"
@@ -277,16 +277,18 @@ var _ = ginkgo.Describe("Containerd: e2e test cluster operation", func() {
 		ginkgo.Context("Containerd: login node, check node reset:", func() {
 			masterSSH := fmt.Sprintf("root@%s", tools.Vmipaddr)
 			masterCmd := exec.Command("sshpass", "-p", "root", "ssh", "-o", "UserKnownHostsFile=/dev/null", "-o", "StrictHostKeyChecking=no", masterSSH, "kubectl")
-			out, _ := tools.DoCmd(*masterCmd)
+			_, err := tools.DoErrCmd(*masterCmd)
 			ginkgo.It("5.1 kubectl check: execute kubectl, output should contain command not found", func() {
-				gomega.Expect(out.String()).Should(gomega.ContainSubstring("command not found"))
+				gomega.Expect(err.String()).Should(gomega.ContainSubstring("command not found"))
 			})
 
 			masterCmd = exec.Command("sshpass", "-p", "root", "ssh", "-o", "UserKnownHostsFile=/dev/null", "-o", "StrictHostKeyChecking=no", masterSSH, "systemctl", "status", "containerd.service")
-			out1, _ := tools.DoCmd(*masterCmd)
+			_, err1 := tools.DoErrCmd(*masterCmd)
+			fmt.Println(err.String())
 			ginkgo.It("5.2 CRI check: execute systemctl status containerd.service", func() {
-				gomega.Expect(out1.String()).Should(gomega.ContainSubstring("inactive"))
-				gomega.Expect(out1.String()).Should(gomega.ContainSubstring("dead"))
+				// gomega.Expect(err1.String()).Should(gomega.ContainSubstring("inactive"))
+				// gomega.Expect(err1.String()).Should(gomega.ContainSubstring("dead"))
+				gomega.Expect(err1.String()).Should(gomega.ContainSubstring("containerd.service could not be found"))
 			})
 
 			masterCmd = exec.Command("sshpass", "-p", "root", "ssh", "-o", "UserKnownHostsFile=/dev/null", "-o", "StrictHostKeyChecking=no", masterSSH, "ls", "-al", "/opt")
