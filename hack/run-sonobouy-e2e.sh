@@ -115,50 +115,50 @@ sed -i "s/v1.22.12/v1.24.3/" $(pwd)/test/kubean_sonobouy_e2e/e2e-upgrade-cluster
 sed -i "s/e2e-cluster1-install-sonobouy/e2e-upgrade-cluster24/" $(pwd)/test/kubean_sonobouy_e2e/e2e-upgrade-cluster24/kubeanClusterOps.yml
 sed -i "s/cluster.yml/upgrade-cluster.yml/" $(pwd)/test/kubean_sonobouy_e2e/e2e-upgrade-cluster24/kubeanClusterOps.yml
 
+
 # # Run nightly e2e
 ginkgo -v -race --fail-fast --focus='\[test\]' ./test/kubean_sonobouy_e2e/  -- --kubeconfig="${MAIN_KUBECONFIG}" --vmipaddr="${vm_ip_addr1}" --vmipaddr2="${vm_ip_addr2}"
-# vagrant destroy -f sonobouyDefault
-# vagrant destroy -f sonobouyDefault2
+vagrant destroy -f sonobouyDefault
+vagrant destroy -f sonobouyDefault2
 
-# # prepare kubean ops yml
-# cp $(pwd)/test/common/kubeanCluster.yml $(pwd)/test/kubeanOps_functions_e2e/e2e-install-cluster/
-# cp $(pwd)/test/common/vars-conf-cm.yml $(pwd)/test/kubeanOps_functions_e2e/e2e-install-cluster/
-# cp $(pwd)/test/common/kubeanCluster.yml $(pwd)/test/kubeanOps_functions_e2e/backofflimit-clusterops/
-# sed -i "s/cluster1/cluster2/" $(pwd)/test/kubeanOps_functions_e2e/backofflimit-clusterops/kubeanCluster.yml
-# cp $(pwd)/test/common/vars-conf-cm.yml $(pwd)/test/kubeanOps_functions_e2e/backofflimit-clusterops/
-# sed -i "s/cluster1/cluster2/" $(pwd)/test/kubeanOps_functions_e2e/backofflimit-clusterops/vars-conf-cm.yml
-# ginkgo -v -race --fail-fast ./test/kubeanOps_functions_e2e/  -- --kubeconfig="${MAIN_KUBECONFIG}" --vmipaddr="${vm_ip_addr1}"
+# prepare kubean ops yml
+cp $(pwd)/test/common/kubeanCluster.yml $(pwd)/test/kubeanOps_functions_e2e/e2e-install-cluster/
+cp $(pwd)/test/common/vars-conf-cm.yml $(pwd)/test/kubeanOps_functions_e2e/e2e-install-cluster/
+cp $(pwd)/test/common/kubeanCluster.yml $(pwd)/test/kubeanOps_functions_e2e/backofflimit-clusterops/
+sed -i "s/cluster1/cluster2/" $(pwd)/test/kubeanOps_functions_e2e/backofflimit-clusterops/kubeanCluster.yml
+cp $(pwd)/test/common/vars-conf-cm.yml $(pwd)/test/kubeanOps_functions_e2e/backofflimit-clusterops/
+sed -i "s/cluster1/cluster2/" $(pwd)/test/kubeanOps_functions_e2e/backofflimit-clusterops/vars-conf-cm.yml
+ginkgo -v -race --fail-fast ./test/kubeanOps_functions_e2e/  -- --kubeconfig="${MAIN_KUBECONFIG}" --vmipaddr="${vm_ip_addr1}"
 
-### do add worker node senario
-## precondition generate rsa key
-## step1 create k8 cluster with containerd and private key
-## step2 add worker node with containerd and private key
-## step3 remove worker node with containerd and private key
-# prepare kubean install job yml files
-# generate_rsa_key
-# #ID_RSA=$(cat ~/.ssh/id_rsa|base64 -w 0)
-# ID_RSA=$(cat ./id_rsa|base64 -w 0)
-# sed -i "s/ID_RSA/${ID_RSA}/" $(pwd)/test/kubean_add_remove_worker_e2e/e2e-install-1node-cluster-prikey/ssh-auth-secret.yml
-# cp $(pwd)/test/common/vars-conf-cm.yml $(pwd)/test/kubean_add_remove_worker_e2e/e2e-install-1node-cluster-prikey/
-# sshpass -p root ssh-copy-id -f -i ./id_rsa.pub root@$vm_ip_addr1
-# sshpass -p root ssh-copy-id -f -i ./id_rsa.pub root@$vm_ip_addr2
-# sed -i "s/vm_ip_addr1/${vm_ip_addr1}/"  $(pwd)/test/kubean_add_remove_worker_e2e/e2e-install-1node-cluster-prikey/hosts-conf-cm.yml
-# sed -i "s#image:#image: ${SPRAY_JOB}#" $(pwd)/test/kubean_add_remove_worker_e2e/e2e-install-1node-cluster-prikey/kubeanClusterOps.yml
-# # prepare add-worker-node yaml
-# cp $(pwd)/test/kubean_add_remove_worker_e2e/e2e-install-1node-cluster-prikey/kubeanCluster.yml $(pwd)/test/kubean_add_remove_worker_e2e/add-worker-node
-# cp $(pwd)/test/kubean_add_remove_worker_e2e/e2e-install-1node-cluster-prikey/ssh-auth-secret.yml $(pwd)/test/kubean_add_remove_worker_e2e/add-worker-node
-# cp $(pwd)/test/kubean_add_remove_worker_e2e/e2e-install-1node-cluster-prikey/kubeanCluster.yml $(pwd)/test/kubean_add_remove_worker_e2e/add-worker-node
-# cp $(pwd)/test/common/vars-conf-cm.yml $(pwd)/test/kubean_add_remove_worker_e2e/add-worker-node
-# sed -i "s/vm_ip_addr1/${vm_ip_addr1}/" $(pwd)/test/kubean_add_remove_worker_e2e/add-worker-node/hosts-conf-cm.yml
-# sed -i "s/vm_ip_addr2/${vm_ip_addr2}/" $(pwd)/test/kubean_add_remove_worker_e2e/add-worker-node/hosts-conf-cm.yml
-# sed -i "s#image:#image: ${SPRAY_JOB}#" $(pwd)/test/kubean_add_remove_worker_e2e/add-worker-node/kubeanClusterOps.yml
-# ## do remove worker node senario
-# cp $(pwd)/test/kubean_add_remove_worker_e2e/e2e-install-1node-cluster-prikey/kubeanCluster.yml $(pwd)/test/kubean_add_remove_worker_e2e/remove-worker-node
-# cp $(pwd)/test/kubean_add_remove_worker_e2e/e2e-install-1node-cluster-prikey/ssh-auth-secret.yml $(pwd)/test/kubean_add_remove_worker_e2e/remove-worker-node
-# cp $(pwd)/test/kubean_add_remove_worker_e2e/e2e-install-1node-cluster-prikey/kubeanCluster.yml $(pwd)/test/kubean_add_remove_worker_e2e/remove-worker-node
-# cp $(pwd)/test/common/vars-conf-cm.yml $(pwd)/test/kubean_add_remove_worker_e2e/remove-worker-node
-# sed -i "s/vm_ip_addr1/${vm_ip_addr1}/" $(pwd)/test/kubean_add_remove_worker_e2e/remove-worker-node/hosts-conf-cm.yml
-# sed -i "s/vm_ip_addr2/${vm_ip_addr2}/" $(pwd)/test/kubean_add_remove_worker_e2e/remove-worker-node/hosts-conf-cm.yml
-# sed -i "s#image:#image: ${SPRAY_JOB}#" $(pwd)/test/kubean_add_remove_worker_e2e/remove-worker-node/kubeanClusterOps.yml
+## do add worker node senario
+# precondition generate rsa key
+# step1 create k8 cluster with containerd and private key
+# step2 add worker node with containerd and private key
+# step3 remove worker node with containerd and private key
+prepare kubean install job yml files
+generate_rsa_key
+ID_RSA=$(cat ./id_rsa|base64 -w 0)
+sed -i "s/ID_RSA/${ID_RSA}/" $(pwd)/test/kubean_add_remove_worker_e2e/e2e-install-1node-cluster-prikey/ssh-auth-secret.yml
+cp $(pwd)/test/common/vars-conf-cm.yml $(pwd)/test/kubean_add_remove_worker_e2e/e2e-install-1node-cluster-prikey/
+sshpass -p root ssh-copy-id -f -i ./id_rsa.pub root@$vm_ip_addr1
+sshpass -p root ssh-copy-id -f -i ./id_rsa.pub root@$vm_ip_addr2
+sed -i "s/vm_ip_addr1/${vm_ip_addr1}/"  $(pwd)/test/kubean_add_remove_worker_e2e/e2e-install-1node-cluster-prikey/hosts-conf-cm.yml
+sed -i "s#image:#image: ${SPRAY_JOB}#" $(pwd)/test/kubean_add_remove_worker_e2e/e2e-install-1node-cluster-prikey/kubeanClusterOps.yml
+# prepare add-worker-node yaml
+cp $(pwd)/test/kubean_add_remove_worker_e2e/e2e-install-1node-cluster-prikey/kubeanCluster.yml $(pwd)/test/kubean_add_remove_worker_e2e/add-worker-node
+cp $(pwd)/test/kubean_add_remove_worker_e2e/e2e-install-1node-cluster-prikey/ssh-auth-secret.yml $(pwd)/test/kubean_add_remove_worker_e2e/add-worker-node
+cp $(pwd)/test/kubean_add_remove_worker_e2e/e2e-install-1node-cluster-prikey/kubeanCluster.yml $(pwd)/test/kubean_add_remove_worker_e2e/add-worker-node
+cp $(pwd)/test/common/vars-conf-cm.yml $(pwd)/test/kubean_add_remove_worker_e2e/add-worker-node
+sed -i "s/vm_ip_addr1/${vm_ip_addr1}/" $(pwd)/test/kubean_add_remove_worker_e2e/add-worker-node/hosts-conf-cm.yml
+sed -i "s/vm_ip_addr2/${vm_ip_addr2}/" $(pwd)/test/kubean_add_remove_worker_e2e/add-worker-node/hosts-conf-cm.yml
+sed -i "s#image:#image: ${SPRAY_JOB}#" $(pwd)/test/kubean_add_remove_worker_e2e/add-worker-node/kubeanClusterOps.yml
+## do remove worker node senario
+cp $(pwd)/test/kubean_add_remove_worker_e2e/e2e-install-1node-cluster-prikey/kubeanCluster.yml $(pwd)/test/kubean_add_remove_worker_e2e/remove-worker-node
+cp $(pwd)/test/kubean_add_remove_worker_e2e/e2e-install-1node-cluster-prikey/ssh-auth-secret.yml $(pwd)/test/kubean_add_remove_worker_e2e/remove-worker-node
+cp $(pwd)/test/kubean_add_remove_worker_e2e/e2e-install-1node-cluster-prikey/kubeanCluster.yml $(pwd)/test/kubean_add_remove_worker_e2e/remove-worker-node
+cp $(pwd)/test/common/vars-conf-cm.yml $(pwd)/test/kubean_add_remove_worker_e2e/remove-worker-node
+sed -i "s/vm_ip_addr1/${vm_ip_addr1}/" $(pwd)/test/kubean_add_remove_worker_e2e/remove-worker-node/hosts-conf-cm.yml
+sed -i "s/vm_ip_addr2/${vm_ip_addr2}/" $(pwd)/test/kubean_add_remove_worker_e2e/remove-worker-node/hosts-conf-cm.yml
+sed -i "s#image:#image: ${SPRAY_JOB}#" $(pwd)/test/kubean_add_remove_worker_e2e/remove-worker-node/kubeanClusterOps.yml
 
-# ginkgo -v -race --fail-fast ./test/kubean_add_remove_worker_e2e/  -- --kubeconfig="${MAIN_KUBECONFIG}" --vmipaddr="${vm_ip_addr1}" --vmipaddr2="${vm_ip_addr2}" 
+ginkgo -v -race --fail-fast ./test/kubean_add_remove_worker_e2e/  -- --kubeconfig="${MAIN_KUBECONFIG}" --vmipaddr="${vm_ip_addr1}" --vmipaddr2="${vm_ip_addr2}" 
