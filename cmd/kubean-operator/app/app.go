@@ -9,6 +9,7 @@ import (
 
 	"github.com/kubean-io/kubean/pkg/controllers/cluster"
 	"github.com/kubean-io/kubean/pkg/controllers/clusterops"
+	"github.com/kubean-io/kubean/pkg/controllers/infomanifest"
 	"github.com/kubean-io/kubean/pkg/controllers/offlineversion"
 	"github.com/kubean-io/kubean/pkg/util"
 	"github.com/kubean-io/kubean/pkg/version"
@@ -20,7 +21,7 @@ import (
 	"k8s.io/klog/v2"
 	kubeanClusterClientSet "kubean.io/api/generated/kubeancluster/clientset/versioned"
 	kubeanClusterOpsClientSet "kubean.io/api/generated/kubeanclusterops/clientset/versioned"
-	kubeancomponentsversionClientSet "kubean.io/api/generated/kubeancomponentsversion/clientset/versioned"
+	kubeaninfomanifestClientSet "kubean.io/api/generated/kubeaninfomanifest/clientset/versioned"
 	kubeanofflineversionClientSet "kubean.io/api/generated/kubeanofflineversion/clientset/versioned"
 	controllerruntime "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
@@ -114,7 +115,7 @@ func setupManager(mgr controllerruntime.Manager, opt *Options, stopChan <-chan s
 	if err != nil {
 		return err
 	}
-	componentsversionClientSet, err := kubeancomponentsversionClientSet.NewForConfig(resetConfig)
+	infomanifestClientSet, err := kubeaninfomanifestClientSet.NewForConfig(resetConfig)
 	if err != nil {
 		return err
 	}
@@ -144,14 +145,24 @@ func setupManager(mgr controllerruntime.Manager, opt *Options, stopChan <-chan s
 		return err
 	}
 
-	componentsVersionController := &offlineversion.Controller{
-		Client:                     mgr.GetClient(),
-		ClientSet:                  ClientSet,
-		ComponentsversionClientSet: componentsversionClientSet,
-		OfflineversionClientSet:    offlineversionClientSet,
+	offlineVersionController := &offlineversion.Controller{
+		Client:                  mgr.GetClient(),
+		ClientSet:               ClientSet,
+		InfoManifestClientSet:   infomanifestClientSet,
+		OfflineversionClientSet: offlineversionClientSet,
 	}
-	if err := componentsVersionController.SetupWithManager(mgr); err != nil {
+	if err := offlineVersionController.SetupWithManager(mgr); err != nil {
 		klog.Errorf("ControllerManager OfflineVersion but %s", err)
+		return err
+	}
+
+	infomanifestController := &infomanifest.Controller{
+		Client:                mgr.GetClient(),
+		InfoManifestClientSet: infomanifestClientSet,
+		ClientSet:             ClientSet,
+	}
+	if err := infomanifestController.SetupWithManager(mgr); err != nil {
+		klog.Errorf("ControllerManager Infomanifest but %s", err)
 		return err
 	}
 	return nil

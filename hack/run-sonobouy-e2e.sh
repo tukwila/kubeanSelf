@@ -115,9 +115,8 @@ sed -i "s/v1.22.12/v1.24.3/" $(pwd)/test/kubean_sonobouy_e2e/e2e-upgrade-cluster
 sed -i "s/e2e-cluster1-install-sonobouy/e2e-upgrade-cluster24/" $(pwd)/test/kubean_sonobouy_e2e/e2e-upgrade-cluster24/kubeanClusterOps.yml
 sed -i "s/cluster.yml/upgrade-cluster.yml/" $(pwd)/test/kubean_sonobouy_e2e/e2e-upgrade-cluster24/kubeanClusterOps.yml
 
-
-# # Run nightly e2e
-ginkgo -v -race --fail-fast --focus='\[test\]' ./test/kubean_sonobouy_e2e/  -- --kubeconfig="${MAIN_KUBECONFIG}" --vmipaddr="${vm_ip_addr1}" --vmipaddr2="${vm_ip_addr2}"
+# Run nightly e2e
+ginkgo -v -race --fail-fast ./test/kubean_sonobouy_e2e/  -- --kubeconfig="${MAIN_KUBECONFIG}" --vmipaddr="${vm_ip_addr1}" --vmipaddr2="${vm_ip_addr2}"
 vagrant destroy -f sonobouyDefault
 vagrant destroy -f sonobouyDefault2
 
@@ -130,13 +129,14 @@ cp $(pwd)/test/common/vars-conf-cm.yml $(pwd)/test/kubeanOps_functions_e2e/backo
 sed -i "s/cluster1/cluster2/" $(pwd)/test/kubeanOps_functions_e2e/backofflimit-clusterops/vars-conf-cm.yml
 ginkgo -v -race --fail-fast ./test/kubeanOps_functions_e2e/  -- --kubeconfig="${MAIN_KUBECONFIG}" --vmipaddr="${vm_ip_addr1}"
 
-## do add worker node senario
-# precondition generate rsa key
-# step1 create k8 cluster with containerd and private key
-# step2 add worker node with containerd and private key
-# step3 remove worker node with containerd and private key
-prepare kubean install job yml files
+### do add worker node senario
+## precondition generate rsa key
+## step1 create k8 cluster with containerd and private key
+## step2 add worker node with containerd and private key
+## step3 remove worker node with containerd and private key
+# prepare kubean install job yml files
 generate_rsa_key
+#ID_RSA=$(cat ~/.ssh/id_rsa|base64 -w 0)
 ID_RSA=$(cat ./id_rsa|base64 -w 0)
 sed -i "s/ID_RSA/${ID_RSA}/" $(pwd)/test/kubean_add_remove_worker_e2e/e2e-install-1node-cluster-prikey/ssh-auth-secret.yml
 cp $(pwd)/test/common/vars-conf-cm.yml $(pwd)/test/kubean_add_remove_worker_e2e/e2e-install-1node-cluster-prikey/
