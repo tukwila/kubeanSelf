@@ -82,6 +82,7 @@ var _ = ginkgo.Describe("e2e test cluster 1 master + 1 worker sonobouy check", f
 
 	})
 
+	//kubectl version：v1.22.12
 	ginkgo.Context("check kubectl version  --short:", func() {
 		kubectlCmd := exec.Command("kubectl", "version", "--short")
 		kubectlOut, _ := tools.DoCmd(*kubectlCmd)
@@ -89,7 +90,6 @@ var _ = ginkgo.Describe("e2e test cluster 1 master + 1 worker sonobouy check", f
 		ginkgo.It("kubectl version  --short should be v1.22.12: ", func() {
 			gomega.Expect(kubectlOut.String()).Should(gomega.ContainSubstring("v1.22.12"))
 		})
-
 	})
 
 	time.Sleep(2 * time.Minute)
@@ -333,6 +333,16 @@ var _ = ginkgo.Describe("e2e test cluster 1 master + 1 worker sonobouy check", f
 		}
 	})
 
+	//kubectl version：v1.23.7
+	ginkgo.Context("check kubectl version  --short:", func() {
+		kubectlCmd := exec.Command("kubectl", "version", "--short")
+		kubectlOut, _ := tools.DoCmd(*kubectlCmd)
+		fmt.Println(kubectlOut.String())
+		ginkgo.It("kubectl version  --short should be v1.23.7: ", func() {
+			gomega.Expect(kubectlOut.String()).Should(gomega.ContainSubstring("v1.23.7"))
+		})
+	})
+
 	time.Sleep(1 * time.Minute)
 	// check kube pods status after upgrade from v1.22.12 to v1.23.7
 	ginkgo.Context("When fetching kube-system pods status after upgrade from v1.22.12 to v1.23.7", func() {
@@ -357,6 +367,7 @@ var _ = ginkgo.Describe("e2e test cluster 1 master + 1 worker sonobouy check", f
 			}
 		}
 	})
+
 	// check kube version after upgrade from v1.22.12 to v1.23.7
 	ginkgo.Context("check kube version after upgrade from v1.22.12 to v1.23.7", func() {
 		config, err = clientcmd.BuildConfigFromFlags("", localKubeConfigPath)
@@ -434,6 +445,17 @@ var _ = ginkgo.Describe("e2e test cluster 1 master + 1 worker sonobouy check", f
 			}
 		}
 	})
+
+	//kubectl version：v1.24.3
+	ginkgo.Context("check kubectl version  --short:", func() {
+		kubectlCmd := exec.Command("kubectl", "version", "--short")
+		kubectlOut, _ := tools.DoCmd(*kubectlCmd)
+		fmt.Println(kubectlOut.String())
+		ginkgo.It("kubectl version  --short should be v1.24.3: ", func() {
+			gomega.Expect(kubectlOut.String()).Should(gomega.ContainSubstring("v1.24.3"))
+		})
+	})
+
 	// check kube version after upgrade from v1.23.7 to v1.24.3
 	ginkgo.Context("check kube version after upgrade from v1.23.7 to v1.24.3", func() {
 		config, err = clientcmd.BuildConfigFromFlags("", localKubeConfigPath)

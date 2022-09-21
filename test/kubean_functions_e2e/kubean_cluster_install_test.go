@@ -21,6 +21,9 @@ import (
 	kubeanClusterClientSet "kubean.io/api/generated/kubeancluster/clientset/versioned"
 )
 
+var preCmdArray = []string{"-p", "root", "ssh", "-o", "UserKnownHostsFile=/dev/null", "-o", "StrictHostKeyChecking=no"}
+var masterSSH = fmt.Sprintf("root@%s", tools.Vmipaddr)
+
 var _ = ginkgo.Describe("Containerd: e2e test cluster operation", func() {
 
 	config, err := clientcmd.BuildConfigFromFlags("", tools.Kubeconfig)
@@ -108,16 +111,19 @@ var _ = ginkgo.Describe("Containerd: e2e test cluster operation", func() {
 
 	// check containerd functions
 	ginkgo.Context("Containerd: when check containerd functions", func() {
-		masterSSH := fmt.Sprintf("root@%s", tools.Vmipaddr)
-		masterCmd := exec.Command("sshpass", "-p", "root", "ssh", "-o", "UserKnownHostsFile=/dev/null", "-o", "StrictHostKeyChecking=no", masterSSH, "nerdctl", "info")
-		out, _ := tools.DoCmd(*masterCmd)
+		// masterCmd := exec.Command("sshpass", "-p", "root", "ssh", "-o", "UserKnownHostsFile=/dev/null", "-o", "StrictHostKeyChecking=no", masterSSH, "nerdctl", "info")
+		// out, _ := tools.DoCmd(*masterCmd)
+		masterCmd := tools.RemoteSSHCmdArray(preCmdArray, []string{masterSSH, "nerdctl", "info"})
+		out, _ := tools.NewDoCmd("sshpass", masterCmd...)
 		ginkgo.It("nerdctl info to check if server running: ", func() {
 			gomega.Expect(out.String()).Should(gomega.ContainSubstring("k8s.io"))
 			gomega.Expect(out.String()).Should(gomega.ContainSubstring("Cgroup Driver: systemd"))
 		})
 
-		masterCmd = exec.Command("sshpass", "-p", "root", "ssh", "-o", "UserKnownHostsFile=/dev/null", "-o", "StrictHostKeyChecking=no", masterSSH, "systemctl", "status", "containerd")
-		out1, _ := tools.DoCmd(*masterCmd)
+		// masterCmd = exec.Command("sshpass", "-p", "root", "ssh", "-o", "UserKnownHostsFile=/dev/null", "-o", "StrictHostKeyChecking=no", masterSSH, "systemctl", "status", "containerd")
+		// out1, _ := tools.DoCmd(*masterCmd)
+		masterCmd = tools.RemoteSSHCmdArray(preCmdArray, []string{masterSSH, "systemctl", "status", "containerd"})
+		out1, _ := tools.NewDoCmd("sshpass", masterCmd...)
 		ginkgo.It("systemctl status containerd to check if containerd running: ", func() {
 			gomega.Expect(out1.String()).Should(gomega.ContainSubstring("/etc/systemd/system/containerd.service;"))
 			gomega.Expect(out1.String()).Should(gomega.ContainSubstring("Active: active (running)"))
@@ -274,7 +280,6 @@ var _ = ginkgo.Describe("Containerd: e2e test cluster operation", func() {
 
 		// after reest login node， check node functions
 		ginkgo.Context("Containerd: login node, check node reset:", func() {
-			masterSSH := fmt.Sprintf("root@%s", tools.Vmipaddr)
 			masterCmd := exec.Command("sshpass", "-p", "root", "ssh", "-o", "UserKnownHostsFile=/dev/null", "-o", "StrictHostKeyChecking=no", masterSSH, "kubectl")
 			_, err := tools.DoErrCmd(*masterCmd)
 			ginkgo.It("5.1 kubectl check: execute kubectl, output should contain command not found", func() {
@@ -290,26 +295,34 @@ var _ = ginkgo.Describe("Containerd: e2e test cluster operation", func() {
 				gomega.Expect(err1.String()).Should(gomega.ContainSubstring("containerd.service could not be found"))
 			})
 
-			masterCmd = exec.Command("sshpass", "-p", "root", "ssh", "-o", "UserKnownHostsFile=/dev/null", "-o", "StrictHostKeyChecking=no", masterSSH, "ls", "-al", "/opt")
-			out2, _ := tools.DoCmd(*masterCmd)
+			// masterCmd = exec.Command("sshpass", "-p", "root", "ssh", "-o", "UserKnownHostsFile=/dev/null", "-o", "StrictHostKeyChecking=no", masterSSH, "ls", "-al", "/opt")
+			// out2, _ := tools.DoCmd(*masterCmd)
+			newMasterCmd := tools.RemoteSSHCmdArray(preCmdArray, []string{masterSSH, "ls", "-al", "/opt"})
+			out2, _ := tools.NewDoCmd("sshpass", newMasterCmd...)
 			ginkgo.It("5.3 CNI check1: execute ls -al /opt, the output should not contain cni", func() {
 				gomega.Expect(out2.String()).ShouldNot(gomega.ContainSubstring("cni"))
 			})
 
-			masterCmd = exec.Command("sshpass", "-p", "root", "ssh", "-o", "UserKnownHostsFile=/dev/null", "-o", "StrictHostKeyChecking=no", masterSSH, "ls", "-al", "/etc")
-			out3, _ := tools.DoCmd(*masterCmd)
+			// masterCmd = exec.Command("sshpass", "-p", "root", "ssh", "-o", "UserKnownHostsFile=/dev/null", "-o", "StrictHostKeyChecking=no", masterSSH, "ls", "-al", "/etc")
+			// out3, _ := tools.DoCmd(*masterCmd)
+			newMasterCmd = tools.RemoteSSHCmdArray(preCmdArray, []string{masterSSH, "ls", "-al", "/etc"})
+			out3, _ := tools.NewDoCmd("sshpass", newMasterCmd...)
 			ginkgo.It("5.4 CNI check2: execute ls -al /etc,the output should not contain cni", func() {
 				gomega.Expect(out3.String()).ShouldNot(gomega.ContainSubstring("cni"))
 			})
 
-			masterCmd = exec.Command("sshpass", "-p", "root", "ssh", "-o", "UserKnownHostsFile=/dev/null", "-o", "StrictHostKeyChecking=no", masterSSH, "ls", "-al", "/root")
-			out4, _ := tools.DoCmd(*masterCmd)
+			// masterCmd = exec.Command("sshpass", "-p", "root", "ssh", "-o", "UserKnownHostsFile=/dev/null", "-o", "StrictHostKeyChecking=no", masterSSH, "ls", "-al", "/root")
+			// out4, _ := tools.DoCmd(*masterCmd)
+			newMasterCmd = tools.RemoteSSHCmdArray(preCmdArray, []string{masterSSH, "ls", "-al", "/root"})
+			out4, _ := tools.NewDoCmd("sshpass", newMasterCmd...)
 			ginkgo.It("5.6 k8s config file check: execute ls -al /root, the output should not contain .kube", func() {
 				gomega.Expect(out4.String()).ShouldNot(gomega.ContainSubstring(".kube"))
 			})
 
-			masterCmd = exec.Command("sshpass", "-p", "root", "ssh", "-o", "UserKnownHostsFile=/dev/null", "-o", "StrictHostKeyChecking=no", masterSSH, "ls", "-al", "/usr/local/bin")
-			out5, _ := tools.DoCmd(*masterCmd)
+			// masterCmd = exec.Command("sshpass", "-p", "root", "ssh", "-o", "UserKnownHostsFile=/dev/null", "-o", "StrictHostKeyChecking=no", masterSSH, "ls", "-al", "/usr/local/bin")
+			// out5, _ := tools.DoCmd(*masterCmd)
+			newMasterCmd = tools.RemoteSSHCmdArray(preCmdArray, []string{masterSSH, "ls", "-al", "/usr/local/bin"})
+			out5, _ := tools.NewDoCmd("sshpass", newMasterCmd...)
 			ginkgo.It("5.7 kubelet check: execute ls -al /usr/local/bin, the output should not contain kubelet", func() {
 				gomega.Expect(out5.String()).ShouldNot(gomega.ContainSubstring("kubelet"))
 			})
@@ -412,16 +425,19 @@ var _ = ginkgo.Describe("Containerd: e2e test cluster operation", func() {
 
 	// check docker functions
 	ginkgo.Context("Docker: when check docker functions", func() {
-		masterSSH := fmt.Sprintf("root@%s", tools.Vmipaddr)
-		masterCmd := exec.Command("sshpass", "-p", "root", "ssh", "-o", "UserKnownHostsFile=/dev/null", "-o", "StrictHostKeyChecking=no", masterSSH, "docker", "info")
-		out, _ := tools.DoCmd(*masterCmd)
+		// masterCmd := exec.Command("sshpass", "-p", "root", "ssh", "-o", "UserKnownHostsFile=/dev/null", "-o", "StrictHostKeyChecking=no", masterSSH, "docker", "info")
+		//out, _ := tools.DoCmd(*masterCmd)
+		masterCmd := tools.RemoteSSHCmdArray(preCmdArray, []string{masterSSH, "docker", "info"})
+		out, _ := tools.NewDoCmd("sshpass", masterCmd...)
 		ginkgo.It("docker info to check if server running: ", func() {
 			gomega.Expect(out.String()).Should(gomega.ContainSubstring("Runtimes: docker-runc runc"))
 			gomega.Expect(out.String()).Should(gomega.ContainSubstring("Cgroup Driver: systemd"))
 		})
 
-		masterCmd = exec.Command("sshpass", "-p", "root", "ssh", "-o", "UserKnownHostsFile=/dev/null", "-o", "StrictHostKeyChecking=no", masterSSH, "systemctl", "status", "docker")
-		out1, _ := tools.DoCmd(*masterCmd)
+		// masterCmd = exec.Command("sshpass", "-p", "root", "ssh", "-o", "UserKnownHostsFile=/dev/null", "-o", "StrictHostKeyChecking=no", masterSSH, "systemctl", "status", "docker")
+		// out1, _ := tools.DoCmd(*masterCmd)
+		masterCmd = tools.RemoteSSHCmdArray(preCmdArray, []string{masterSSH, "systemctl", "status", "docker"})
+		out1, _ := tools.NewDoCmd("sshpass", masterCmd...)
 		ginkgo.It("systemctl status containerd to check if containerd running: ", func() {
 			gomega.Expect(out1.String()).Should(gomega.ContainSubstring("Active: active (running)"))
 		})
