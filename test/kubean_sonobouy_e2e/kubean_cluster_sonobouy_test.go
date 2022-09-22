@@ -126,7 +126,7 @@ var _ = ginkgo.Describe("e2e test cluster 1 master + 1 worker sonobouy check", f
 		fmt.Println(out.String())
 
 		sshcmd := tools.RemoteSSHCmdArray(preCmdArray, []string{masterSSH, "sonobuoy", "status"})
-		sshout, _ := tools.DoCmd(*sshcmd)
+		sshout, _ := tools.NewDoCmd("sshpass", sshcmd...)
 		fmt.Println(sshout.String())
 
 		ginkgo.GinkgoWriter.Printf("sonobuoy status result: %s\n", out.String())
