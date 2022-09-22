@@ -18,8 +18,6 @@ import (
 )
 
 var preCmdArray = []string{"-p", "root", "ssh", "-o", "UserKnownHostsFile=/dev/null", "-o", "StrictHostKeyChecking=no"}
-var masterSSH = fmt.Sprintf("root@%s", tools.Vmipaddr)
-var workerSSH = fmt.Sprintf("root@%s", tools.Vmipaddr2)
 
 var _ = ginkgo.Describe("e2e test cluster 1 master + 1 worker sonobouy check", func() {
 
@@ -28,6 +26,8 @@ var _ = ginkgo.Describe("e2e test cluster 1 master + 1 worker sonobouy check", f
 	kubeClient, err := kubernetes.NewForConfig(config)
 	gomega.ExpectWithOffset(2, err).NotTo(gomega.HaveOccurred(), "failed new client set")
 	localKubeConfigPath := "cluster1-sonobouy-config"
+	var masterSSH = fmt.Sprintf("root@%s", tools.Vmipaddr)
+	var workerSSH = fmt.Sprintf("root@%s", tools.Vmipaddr2)
 
 	defer ginkgo.GinkgoRecover()
 
