@@ -234,7 +234,8 @@ var _ = ginkgo.Describe("e2e test cluster operation", func() {
 			//the pod set was 192.168.128.0/20, so the available pod ip range is 192.168.128.1 ~ 192.168.143.255
 			pods, err := kubeClient.CoreV1().Pods("default").List(context.Background(), metav1.ListOptions{})
 			gomega.ExpectWithOffset(2, err).NotTo(gomega.HaveOccurred(), "failed to get pods")
-			gomega.Expect(len(pods.Items) > 0).Should(gomega.BeTrue())
+			//gomega.Expect(len(pods.Items) > 0).Should(gomega.BeTrue())
+			gomega.Expect(len(pods.Items)).NotTo(gomega.Equal(0))
 
 			podName := pods.Items[0].Name
 			pod, err := kubeClient.CoreV1().Pods(corev1.NamespaceDefault).Get(context.Background(), podName, metav1.GetOptions{})
