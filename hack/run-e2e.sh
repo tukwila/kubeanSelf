@@ -48,6 +48,9 @@ cp $(pwd)/test/common/vars-conf-cm.yml $(pwd)/test/kubean_functions_e2e/e2e-inst
 sed -i "s/ip:/ip: ${vm_ip_addr}/" $(pwd)/test/kubean_functions_e2e/e2e-install-cluster/hosts-conf-cm.yml
 sed -i "s/ansible_host:/ansible_host: ${vm_ip_addr}/" $(pwd)/test/kubean_functions_e2e/e2e-install-cluster/hosts-conf-cm.yml
 sed -i "s#image:#image: ${SPRAY_JOB}#" $(pwd)/test/kubean_functions_e2e/e2e-install-cluster/kubeanClusterOps.yml
+# Run cluster function e2e
+ginkgo -v -race --fail-fast ./test/kubean_deploy_e2e/  -- --kubeconfig="${MAIN_KUBECONFIG}"
+ginkgo -v -race --fail-fast ./test/kubean_functions_e2e/  -- --kubeconfig="${MAIN_KUBECONFIG}" --vmipaddr="${vm_ip_addr}"
 
 # prepare kubean reset job yml
 cp $(pwd)/test/common/hosts-conf-cm.yml $(pwd)/test/kubean_functions_e2e/e2e-reset-cluster/
@@ -56,7 +59,6 @@ cp $(pwd)/test/common/vars-conf-cm.yml $(pwd)/test/kubean_functions_e2e/e2e-rese
 sed -i "s/ip:/ip: ${vm_ip_addr}/" $(pwd)/test/kubean_functions_e2e/e2e-reset-cluster/hosts-conf-cm.yml
 sed -i "s/ansible_host:/ansible_host: ${vm_ip_addr}/" $(pwd)/test/kubean_functions_e2e/e2e-reset-cluster/hosts-conf-cm.yml
 sed -i "s#image:#image: ${SPRAY_JOB}#" $(pwd)/test/kubean_functions_e2e/e2e-reset-cluster/kubeanClusterOps.yml
-
 # prepare kubean install job yml using docker
 cp -r $(pwd)/test/kubean_functions_e2e/e2e-install-cluster $(pwd)/test/kubean_functions_e2e/e2e-install-cluster-docker
 sed -i "s#e2e-cluster1-install#e2e-install-cluster-docker#" $(pwd)/test/kubean_functions_e2e/e2e-install-cluster-docker/kubeanClusterOps.yml
@@ -67,6 +69,4 @@ sed -i "s#  \"10.6.170.10:5000\": \"http://10.6.170.10:5000\"#   - 10.6.170.10:5
 # override_system_hostname=false
 sed -i "$ a\    override_system_hostname: false" $(pwd)/test/kubean_functions_e2e/e2e-install-cluster-docker/vars-conf-cm.yml
 
-# Run cluster function e2e
-ginkgo -v -race --fail-fast ./test/kubean_deploy_e2e/  -- --kubeconfig="${MAIN_KUBECONFIG}"
-ginkgo -v -race --fail-fast ./test/kubean_functions_e2e/  -- --kubeconfig="${MAIN_KUBECONFIG}" --vmipaddr="${vm_ip_addr}"
+ginkgo -v -race --fail-fast ./test/kubean_reset_e2e/  -- --kubeconfig="${MAIN_KUBECONFIG}" --vmipaddr="${vm_ip_addr}"
