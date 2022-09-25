@@ -23,6 +23,8 @@ import (
 	kubeanClusterClientSet "kubean.io/api/generated/kubeancluster/clientset/versioned"
 )
 
+var CmdArray = []string{"-p", "root", "ssh", "-o", "UserKnownHostsFile=/dev/null", "-o", "StrictHostKeyChecking=no"}
+
 var _ = ginkgo.Describe("e2e test cluster operation", func() {
 
 	config, err := clientcmd.BuildConfigFromFlags("", tools.Kubeconfig)
