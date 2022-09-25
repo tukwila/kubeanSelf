@@ -87,11 +87,9 @@ var _ = ginkgo.Describe("e2e test cluster reset operation", func() {
 			masterCmd = exec.Command("sshpass", "-p", "root", "ssh", "-o", "UserKnownHostsFile=/dev/null", "-o", "StrictHostKeyChecking=no", masterSSH, "systemctl", "status", "containerd.service")
 			_, err1 := tools.DoErrCmd(*masterCmd)
 			fmt.Println(err1.String())
-			// ginkgo.It("5.2 CRI check: execute systemctl status containerd.service", func() {
-			// 	// gomega.Expect(err1.String()).Should(gomega.ContainSubstring("inactive"))
-			// 	// gomega.Expect(err1.String()).Should(gomega.ContainSubstring("dead"))
-			// 	//gomega.Expect(err1.String()).Should(gomega.ContainSubstring("containerd.service could not be found"))
-			// })
+			ginkgo.It("5.2 CRI check: execute systemctl status containerd.service", func() {
+				gomega.Expect(err1).ShouldNot(gomega.BeNil())
+			})
 
 			newMasterCmd := tools.RemoteSSHCmdArray([]string{masterSSH, "ls", "-al", "/opt"})
 			out2, _ := tools.NewDoCmd("sshpass", newMasterCmd...)
@@ -205,13 +203,13 @@ var _ = ginkgo.Describe("e2e test cluster reset operation", func() {
 		masterCmd := tools.RemoteSSHCmdArray([]string{masterSSH, "docker", "info"})
 		out, _ := tools.NewDoCmd("sshpass", masterCmd...)
 		ginkgo.It("docker info to check if server running: ", func() {
-			gomega.Expect(out.String()).Should(gomega.ContainSubstring("Runtimes: docker-runc runc"))
+			gomega.Expect(out.String()).Should(gomega.ContainSubstring("/var/lib/docker"))
 			gomega.Expect(out.String()).Should(gomega.ContainSubstring("Cgroup Driver: systemd"))
 		})
 
 		masterCmd = tools.RemoteSSHCmdArray([]string{masterSSH, "systemctl", "status", "docker"})
 		out1, _ := tools.NewDoCmd("sshpass", masterCmd...)
-		ginkgo.It("systemctl status containerd to check if containerd running: ", func() {
+		ginkgo.It("systemctl status containerd to check if docker running: ", func() {
 			gomega.Expect(out1.String()).Should(gomega.ContainSubstring("Active: active (running)"))
 		})
 	})
