@@ -23,8 +23,6 @@ import (
 	kubeanClusterClientSet "kubean.io/api/generated/kubeancluster/clientset/versioned"
 )
 
-var preCmdArray = []string{"-p", "root", "ssh", "-o", "UserKnownHostsFile=/dev/null", "-o", "StrictHostKeyChecking=no"}
-
 var _ = ginkgo.Describe("e2e test cluster operation", func() {
 
 	config, err := clientcmd.BuildConfigFromFlags("", tools.Kubeconfig)
@@ -113,14 +111,14 @@ var _ = ginkgo.Describe("e2e test cluster operation", func() {
 
 	// check containerd functions
 	ginkgo.Context("Containerd: when check containerd functions", func() {
-		masterCmd := tools.RemoteSSHCmdArray(preCmdArray, []string{masterSSH, "nerdctl", "info"})
+		masterCmd := tools.RemoteSSHCmdArray([]string{masterSSH, "nerdctl", "info"})
 		out, _ := tools.NewDoCmd("sshpass", masterCmd...)
 		ginkgo.It("nerdctl info to check if server running: ", func() {
 			gomega.Expect(out.String()).Should(gomega.ContainSubstring("k8s.io"))
 			gomega.Expect(out.String()).Should(gomega.ContainSubstring("Cgroup Driver: systemd"))
 		})
 
-		masterCmd = tools.RemoteSSHCmdArray(preCmdArray, []string{masterSSH, "systemctl", "status", "containerd"})
+		masterCmd = tools.RemoteSSHCmdArray([]string{masterSSH, "systemctl", "status", "containerd"})
 		out1, _ := tools.NewDoCmd("sshpass", masterCmd...)
 		ginkgo.It("systemctl status containerd to check if containerd running: ", func() {
 			gomega.Expect(out1.String()).Should(gomega.ContainSubstring("/etc/systemd/system/containerd.service;"))

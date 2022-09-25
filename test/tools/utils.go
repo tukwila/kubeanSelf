@@ -107,6 +107,7 @@ func DoErrCmd(cmd exec.Cmd) (bytes.Buffer, bytes.Buffer) {
 	return out, stderr
 }
 
-func RemoteSSHCmdArray(CmdArray []string, subCmd []string) []string {
+func RemoteSSHCmdArray(subCmd []string) []string {
+	var CmdArray = []string{"-p", "root", "ssh", "-o", "UserKnownHostsFile=/dev/null", "-o", "StrictHostKeyChecking=no"}
 	return append(CmdArray, subCmd...)
 }

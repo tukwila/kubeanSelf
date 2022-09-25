@@ -121,11 +121,11 @@ var _ = ginkgo.Describe("e2e test cluster 1 master + 1 worker sonobouy check", f
 	ginkgo.Context("do sonobuoy checking ", func() {
 		subCmd := []string{masterSSH, "sonobuoy", "run", "--sonobuoy-image", "10.6.170.10:5000/sonobuoy/sonobuoy:v0.56.7", "--plugin-env", "e2e.E2E_FOCUS=pods",
 			"--plugin-env", "e2e.E2E_DRYRUN=true", "--wait"}
-		cmd := tools.RemoteSSHCmdArray(preCmdArray, subCmd)
+		cmd := tools.RemoteSSHCmdArray(subCmd)
 		out, _ := tools.NewDoCmd("sshpass", cmd...)
 		fmt.Println(out.String())
 
-		sshcmd := tools.RemoteSSHCmdArray(preCmdArray, []string{masterSSH, "sonobuoy", "status"})
+		sshcmd := tools.RemoteSSHCmdArray([]string{masterSSH, "sonobuoy", "status"})
 		sshout, _ := tools.NewDoCmd("sshpass", sshcmd...)
 		fmt.Println(sshout.String())
 
@@ -140,8 +140,8 @@ var _ = ginkgo.Describe("e2e test cluster 1 master + 1 worker sonobouy check", f
 	// cat /proc/sys/net/ipv4/ip_forward: 1
 	// cat /proc/sys/net/ipv4/tcp_tw_recycle: 0
 	ginkgo.Context("do network configurations checking", func() {
-		masterCmd := tools.RemoteSSHCmdArray(preCmdArray, []string{masterSSH, "cat", "/proc/sys/net/ipv4/ip_forward"})
-		workerCmd := tools.RemoteSSHCmdArray(preCmdArray, []string{workerSSH, "cat", "/proc/sys/net/ipv4/ip_forward"})
+		masterCmd := tools.RemoteSSHCmdArray([]string{masterSSH, "cat", "/proc/sys/net/ipv4/ip_forward"})
+		workerCmd := tools.RemoteSSHCmdArray([]string{workerSSH, "cat", "/proc/sys/net/ipv4/ip_forward"})
 		out1, _ := tools.NewDoCmd("sshpass", masterCmd...)
 		fmt.Println("out: ", out1.String())
 		ginkgo.It("master net.ipv4.ip_forward result checking: ", func() {
@@ -153,8 +153,8 @@ var _ = ginkgo.Describe("e2e test cluster 1 master + 1 worker sonobouy check", f
 			gomega.Expect(out2.String()).Should(gomega.ContainSubstring("1"))
 		})
 
-		masterCmd = tools.RemoteSSHCmdArray(preCmdArray, []string{masterSSH, "cat", "/proc/sys/net/ipv4/tcp_tw_recycle"})
-		workerCmd = tools.RemoteSSHCmdArray(preCmdArray, []string{workerSSH, "cat", "/proc/sys/net/ipv4/tcp_tw_recycle"})
+		masterCmd = tools.RemoteSSHCmdArray([]string{masterSSH, "cat", "/proc/sys/net/ipv4/tcp_tw_recycle"})
+		workerCmd = tools.RemoteSSHCmdArray([]string{workerSSH, "cat", "/proc/sys/net/ipv4/tcp_tw_recycle"})
 		out3, _ := tools.NewDoCmd("sshpass", masterCmd...)
 		fmt.Println("out: ", out3.String())
 		ginkgo.It("master net.ipv4.tcp_tw_recycle result checking: ", func() {
@@ -181,8 +181,8 @@ var _ = ginkgo.Describe("e2e test cluster 1 master + 1 worker sonobouy check", f
 		}
 
 		//5. check folder /opt/cni/bin contains  file "calico" and "calico-ipam" are exist in both master and worker node
-		masterCmd := tools.RemoteSSHCmdArray(preCmdArray, []string{masterSSH, "ls", "/opt/cni/bin/"})
-		workerCmd := tools.RemoteSSHCmdArray(preCmdArray, []string{workerSSH, "ls", "/opt/cni/bin/"})
+		masterCmd := tools.RemoteSSHCmdArray([]string{masterSSH, "ls", "/opt/cni/bin/"})
+		workerCmd := tools.RemoteSSHCmdArray([]string{workerSSH, "ls", "/opt/cni/bin/"})
 		out1, _ := tools.NewDoCmd("sshpass", masterCmd...)
 		fmt.Println("out1: ", out1.String())
 		ginkgo.It("master /opt/cni/bin checking: ", func() {
@@ -195,7 +195,7 @@ var _ = ginkgo.Describe("e2e test cluster 1 master + 1 worker sonobouy check", f
 		})
 
 		// check calicoctl
-		masterCmd = tools.RemoteSSHCmdArray(preCmdArray, []string{masterSSH, "calicoctl", "version"})
+		masterCmd = tools.RemoteSSHCmdArray([]string{masterSSH, "calicoctl", "version"})
 		out3, _ := tools.NewDoCmd("sshpass", masterCmd...)
 		fmt.Println("out3: ", out3.String())
 		ginkgo.It("master calicoctl checking: ", func() {
@@ -229,26 +229,26 @@ var _ = ginkgo.Describe("e2e test cluster 1 master + 1 worker sonobouy check", f
 			gomega.Expect(string(pod2.Status.Phase)).To(gomega.Equal("Running"))
 		})
 		// 4.1 node ping 2 pods
-		pingNginx1IpCmd1 := tools.RemoteSSHCmdArray(preCmdArray, []string{masterSSH, "ping", "-c 1", nginx1Ip})
+		pingNginx1IpCmd1 := tools.RemoteSSHCmdArray([]string{masterSSH, "ping", "-c 1", nginx1Ip})
 		pingNginx1IpCmd1Out, _ := tools.NewDoCmd("sshpass", pingNginx1IpCmd1...)
 		fmt.Println("node ping nginx pod 1: ", pingNginx1IpCmd1Out.String())
 		ginkgo.It("node ping nginx pod 1 succuss: ", func() {
 			gomega.Expect(pingNginx1IpCmd1Out.String()).Should(gomega.ContainSubstring("1 received"))
 		})
-		pingNginx2IpCmd1 := tools.RemoteSSHCmdArray(preCmdArray, []string{masterSSH, "ping", "-c 1", nginx2Ip})
+		pingNginx2IpCmd1 := tools.RemoteSSHCmdArray([]string{masterSSH, "ping", "-c 1", nginx2Ip})
 		pingNgin21IpCmd1Out, _ := tools.NewDoCmd("sshpass", pingNginx2IpCmd1...)
 		fmt.Println("node ping nginx pod 2: ", pingNgin21IpCmd1Out.String())
 		ginkgo.It("node ping nginx pod 2 succuss: ", func() {
 			gomega.Expect(pingNgin21IpCmd1Out.String()).Should(gomega.ContainSubstring("1 received"))
 		})
 		// 4.2 pod ping pod
-		podsPingCmd1 := tools.RemoteSSHCmdArray(preCmdArray, []string{masterSSH, "kubectl", "exec", "-it", "nginx1", "-n", "kube-system", "--", "ping", "-c 1", nginx2Ip})
+		podsPingCmd1 := tools.RemoteSSHCmdArray([]string{masterSSH, "kubectl", "exec", "-it", "nginx1", "-n", "kube-system", "--", "ping", "-c 1", nginx2Ip})
 		podsPingCmdOut1, _ := tools.NewDoCmd("sshpass", podsPingCmd1...)
 		fmt.Println("pod ping pod: ", podsPingCmdOut1.String())
 		ginkgo.It("pod ping pod succuss: ", func() {
 			gomega.Expect(podsPingCmdOut1.String()).Should(gomega.ContainSubstring("1 packets received"))
 		})
-		podsPingCmd2 := tools.RemoteSSHCmdArray(preCmdArray, []string{masterSSH, "kubectl", "exec", "-it", "nginx2", "-n", "default", "--", "ping", "-c 1", nginx1Ip})
+		podsPingCmd2 := tools.RemoteSSHCmdArray([]string{masterSSH, "kubectl", "exec", "-it", "nginx2", "-n", "default", "--", "ping", "-c 1", nginx1Ip})
 		podsPingCmdOut2, _ := tools.NewDoCmd("sshpass", podsPingCmd2...)
 		fmt.Println("pod ping pod: ", podsPingCmdOut2.String())
 		ginkgo.It("pod ping pod succuss: ", func() {
@@ -298,7 +298,7 @@ var _ = ginkgo.Describe("e2e test cluster 1 master + 1 worker sonobouy check", f
 	ginkgo.Context("check kubectl version  --short:", func() {
 		// kubectlCmd := exec.Command("kubectl", "version", "--short")
 		// kubectlOut, _ := tools.DoCmd(*kubectlCmd)
-		kubectlCmd := tools.RemoteSSHCmdArray(preCmdArray, []string{masterSSH, "kubectl", "version", "--short"})
+		kubectlCmd := tools.RemoteSSHCmdArray([]string{masterSSH, "kubectl", "version", "--short"})
 		kubectlOut, _ := tools.NewDoCmd("sshpass", kubectlCmd...)
 		fmt.Println(kubectlOut.String())
 		ginkgo.It("kubectl version  --short should be v1.23.7: ", func() {
@@ -410,7 +410,7 @@ var _ = ginkgo.Describe("e2e test cluster 1 master + 1 worker sonobouy check", f
 
 	//kubectl version：v1.24.3
 	ginkgo.Context("check kubectl version  --short:", func() {
-		kubectlCmd := tools.RemoteSSHCmdArray(preCmdArray, []string{masterSSH, "kubectl", "version", "--short"})
+		kubectlCmd := tools.RemoteSSHCmdArray([]string{masterSSH, "kubectl", "version", "--short"})
 		kubectlOut, _ := tools.NewDoCmd("sshpass", kubectlCmd...)
 		fmt.Println(kubectlOut.String())
 		ginkgo.It("kubectl version  --short should be v1.24.3: ", func() {
