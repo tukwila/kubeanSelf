@@ -36,7 +36,12 @@ var _ = ginkgo.Describe("Calico single stack tunnel: IPIP_ALWAYS", func() {
 		kubeanNamespace := "kubean-system"
 		kubeanClusterOpsName := "e2e-install-calico-cluster"
 
-		// firstly: apply vars-conf-cm
+		installYamlPath := fmt.Sprint(tools.GetKuBeanPath(), clusterInstallYamlsPath)
+		cmd := exec.Command("kubectl", "--kubeconfig="+tools.Kubeconfig, "apply", "-f", installYamlPath)
+		out, _ := tools.DoCmd(*cmd)
+		fmt.Println(out.String())
+
+		//apply vars-conf-cm
 		var substring = `calico_ip_auto_method: first-found  
 						calico_ip6_auto_method: first-found  
 						calico_ipip_mode: Always
@@ -44,18 +49,6 @@ var _ = ginkgo.Describe("Calico single stack tunnel: IPIP_ALWAYS", func() {
 						calico_network_backend: bird
 						`
 		tools.CreatVarsCM(substring)
-		// Create yaml for kuBean CR and related configuration
-		installYamlPath := fmt.Sprint(tools.GetKuBeanPath(), clusterInstallYamlsPath)
-		// do cluster deploy in containerd mode
-		cmd := exec.Command("kubectl", "--kubeconfig="+tools.Kubeconfig, "apply", "-f", installYamlPath)
-		ginkgo.GinkgoWriter.Printf("cmd: %s\n", cmd.String())
-		var out, stderr bytes.Buffer
-		cmd.Stdout = &out
-		cmd.Stderr = &stderr
-		if err := cmd.Run(); err != nil {
-			ginkgo.GinkgoWriter.Printf("apply cmd error: %s\n", err.Error())
-			gomega.ExpectWithOffset(2, err).NotTo(gomega.HaveOccurred(), stderr.String())
-		}
 
 		// Check if the job and related pods have been created
 		time.Sleep(30 * time.Second)
