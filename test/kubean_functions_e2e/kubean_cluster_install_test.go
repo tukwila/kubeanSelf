@@ -79,7 +79,7 @@ var _ = ginkgo.Describe("e2e test cluster operation", func() {
 		gomega.ExpectWithOffset(2, err).NotTo(gomega.HaveOccurred(), "failed new client set")
 
 		// from KuBeanCluster: cluster1 get kubeconfRef: name: cluster1-kubeconf namespace: kubean-system
-		cluster1, err := clusterClientSet.KubeanclusterV1alpha1().KuBeanClusters().Get(context.Background(), "cluster1", metav1.GetOptions{})
+		cluster1, err := clusterClientSet.KubeanV1alpha1().KuBeanClusters().Get(context.Background(), "cluster1", metav1.GetOptions{})
 		fmt.Println("Name:", cluster1.Spec.KubeConfRef.Name, "NameSpace:", cluster1.Spec.KubeConfRef.NameSpace)
 		gomega.ExpectWithOffset(2, err).NotTo(gomega.HaveOccurred(), "failed to get KuBeanCluster")
 
@@ -105,6 +105,14 @@ var _ = ginkgo.Describe("e2e test cluster operation", func() {
 				fmt.Println(pod.Name, string(pod.Status.Phase))
 				gomega.Expect(string(pod.Status.Phase)).To(gomega.Equal("Running"))
 			}
+		})
+
+		// check hostname after deploy: hostname should be node1
+		hostnamecmd := tools.RemoteSSHCmdArray([]string{masterSSH, "hostname"})
+		hostnameout, _ := tools.NewDoCmd("sshpass", hostnamecmd...)
+		ginkgo.It("set-hostname to node1", func() {
+			fmt.Println("hostname: ", hostnameout.String())
+			gomega.Expect(hostnameout.String()).Should(gomega.ContainSubstring("node1"))
 		})
 
 	})

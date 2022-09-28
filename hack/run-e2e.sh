@@ -29,7 +29,7 @@ vm_clean_up(){
     exit $EXIT_CODE
 }
 
-#trap vm_clean_up EXIT
+trap vm_clean_up EXIT
 vagrant init Kiowa/kubean-e2e-vm-template --box-version 0
 sed -i "$ i\  config.vm.network \"public_network\", ip: \"${vm_ip_addr}\", bridge: \"ens192\"" Vagrantfile
 vagrant up
