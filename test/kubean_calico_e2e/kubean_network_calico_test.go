@@ -27,7 +27,7 @@ var _ = ginkgo.Describe("Calico single stack tunnel: IPIP_ALWAYS", func() {
 	gomega.ExpectWithOffset(2, err).NotTo(gomega.HaveOccurred(), "failed new client set")
 	localKubeConfigPath := "calico-single-stack.config"
 	var masterSSH = fmt.Sprintf("root@%s", tools.Vmipaddr)
-	var workerSSH = fmt.Sprintf("root@%s", tools.Vmipaddr2)
+	//var workerSSH = fmt.Sprintf("root@%s", tools.Vmipaddr2)
 
 	defer ginkgo.GinkgoRecover()
 
@@ -37,7 +37,13 @@ var _ = ginkgo.Describe("Calico single stack tunnel: IPIP_ALWAYS", func() {
 		kubeanClusterOpsName := "e2e-install-calico-cluster"
 
 		// firstly: apply vars-conf-cm
-		tools.CreatVarsCM()
+		var substring = `calico_ip_auto_method: first-found  
+						calico_ip6_auto_method: first-found  
+						calico_ipip_mode: Always
+						calico_vxlan_mode: Never
+						calico_network_backend: bird
+						`
+		tools.CreatVarsCM(substring)
 		// Create yaml for kuBean CR and related configuration
 		installYamlPath := fmt.Sprint(tools.GetKuBeanPath(), clusterInstallYamlsPath)
 		// do cluster deploy in containerd mode
@@ -108,9 +114,8 @@ var _ = ginkgo.Describe("Calico single stack tunnel: IPIP_ALWAYS", func() {
 
 	})
 
-	//
-	ginkgo.Context("Support CNI: Calico", func() {
-		//4. check calico (calico-node and calico-kube-controller)pod status: pod status should be "Running"
+	ginkgo.Context("calico network result checking", func() {
+		//6. check calico (calico-node and calico-kube-controller)pod status: pod status should be "Running"
 		config, _ = clientcmd.BuildConfigFromFlags("", localKubeConfigPath)
 		kubeClient, _ = kubernetes.NewForConfig(config)
 		podList, _ := kubeClient.CoreV1().Pods("kube-system").List(context.TODO(), metav1.ListOptions{})
@@ -122,36 +127,13 @@ var _ = ginkgo.Describe("Calico single stack tunnel: IPIP_ALWAYS", func() {
 			}
 		}
 
-		//5. check folder /opt/cni/bin contains  file "calico" and "calico-ipam" are exist in both master and worker node
-		masterCmd := tools.RemoteSSHCmdArray([]string{masterSSH, "ls", "/opt/cni/bin/"})
-		workerCmd := tools.RemoteSSHCmdArray([]string{workerSSH, "ls", "/opt/cni/bin/"})
-		out1, _ := tools.NewDoCmd("sshpass", masterCmd...)
-		fmt.Println("out1: ", out1.String())
-		ginkgo.It("master /opt/cni/bin checking: ", func() {
-			gomega.Expect(out1.String()).Should(gomega.ContainSubstring("calico"))
-		})
-		out2, _ := tools.NewDoCmd("sshpass", workerCmd...)
-		fmt.Println("out2: ", out2.String())
-		ginkgo.It("worker /opt/cni/bin checking: ", func() {
-			gomega.Expect(out2.String()).Should(gomega.ContainSubstring("calico"))
-		})
+		//7. check tunnel valid
 
-		// check calicoctl
-		masterCmd = tools.RemoteSSHCmdArray([]string{masterSSH, "calicoctl", "version"})
-		out3, _ := tools.NewDoCmd("sshpass", masterCmd...)
-		fmt.Println("out3: ", out3.String())
-		ginkgo.It("master calicoctl checking: ", func() {
-			gomega.Expect(out3.String()).Should(gomega.ContainSubstring("Client Version"))
-			gomega.Expect(out3.String()).Should(gomega.ContainSubstring("Cluster Version"))
-			gomega.Expect(out3.String()).Should(gomega.ContainSubstring("kubespray,kubeadm,kdd"))
-		})
-
-		//6. check pod connection:
+		//8. check pod connection
 		config, err = clientcmd.BuildConfigFromFlags("", localKubeConfigPath)
 		gomega.ExpectWithOffset(2, err).NotTo(gomega.HaveOccurred(), "failed build config")
 		kubeClient, err = kubernetes.NewForConfig(config)
 		gomega.ExpectWithOffset(2, err).NotTo(gomega.HaveOccurred(), "failed new client set")
-		//6.1. create a deployment of nginx1 on master, on namespace ns1: set replicaset to 1(here call the pod as pod1)
 		nginx1Cmd := exec.Command("kubectl", "run", "nginx1", "-n", "kube-system", "--image", "nginx:alpine", "--kubeconfig", localKubeConfigPath, "--env", "NodeName=node1")
 		nginx1CmdOut, err1 := tools.DoErrCmd(*nginx1Cmd)
 		fmt.Println("create nginx1: ", nginx1CmdOut.String(), err1.String())
@@ -170,7 +152,7 @@ var _ = ginkgo.Describe("Calico single stack tunnel: IPIP_ALWAYS", func() {
 		ginkgo.It("nginxPod1 should be in running status", func() {
 			gomega.Expect(string(pod2.Status.Phase)).To(gomega.Equal("Running"))
 		})
-		// 4.1 node ping 2 pods
+		// 10. node ping 2 pods
 		pingNginx1IpCmd1 := tools.RemoteSSHCmdArray([]string{masterSSH, "ping", "-c 1", nginx1Ip})
 		pingNginx1IpCmd1Out, _ := tools.NewDoCmd("sshpass", pingNginx1IpCmd1...)
 		fmt.Println("node ping nginx pod 1: ", pingNginx1IpCmd1Out.String())
@@ -183,7 +165,7 @@ var _ = ginkgo.Describe("Calico single stack tunnel: IPIP_ALWAYS", func() {
 		ginkgo.It("node ping nginx pod 2 succuss: ", func() {
 			gomega.Expect(pingNgin21IpCmd1Out.String()).Should(gomega.ContainSubstring("1 received"))
 		})
-		// 4.2 pod ping pod
+		// 11 pod ping pod
 		podsPingCmd1 := tools.RemoteSSHCmdArray([]string{masterSSH, "kubectl", "exec", "-it", "nginx1", "-n", "kube-system", "--", "ping", "-c 1", nginx2Ip})
 		podsPingCmdOut1, _ := tools.NewDoCmd("sshpass", podsPingCmd1...)
 		fmt.Println("pod ping pod: ", podsPingCmdOut1.String())

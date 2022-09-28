@@ -83,7 +83,7 @@ generate_rsa_key(){
     echo 'y'| ssh-keygen -f id_rsa -t rsa -N ''
 }
 
-trap vm_clean_up EXIT
+#trap vm_clean_up EXIT
 create_2node_vms
 sshpass -p root ssh -o StrictHostKeyChecking=no root@${vm_ip_addr1} cat /proc/version
 

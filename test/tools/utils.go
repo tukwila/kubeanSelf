@@ -147,6 +147,8 @@ var groupVarsYaml = `
 	download_container: false
 	download_force_cache: true
 	download_localhost: true
+
+	%s
 	
 	# offline
 	registry_host: "10.6.170.10:5000"
@@ -172,9 +174,11 @@ var groupVarsYaml = `
 	containerd_download_url: "{{ files_repo }}/github.com/containerd/containerd/releases/download/v{{ containerd_version }}/containerd-{{ containerd_version }}-linux-{{ image_arch }}.tar.gz"
 	nerdctl_download_url: "{{ files_repo }}/github.com/containerd/nerdctl/releases/download/v{{ nerdctl_version }}/nerdctl-{{ nerdctl_version }}-{{ ansible_system | lower }}-{{ image_arch }}.tar.gz"
 	`
-var groupVarsYamlString = fmt.Sprintf(groupVarsYaml, "1.23.7", "calico", "10.96.0.0/12", "192.168.128.0/20", 24)
 
-func CreatVarsCM() {
+func CreatVarsCM(subStr string) {
+
+	var groupVarsYamlString = fmt.Sprintf(groupVarsYaml, "1.23.7", "calico", "10.96.0.0/12", "192.168.128.0/20", 24, subStr)
+
 	config, err := clientcmd.BuildConfigFromFlags("", Kubeconfig)
 	gomega.ExpectWithOffset(2, err).NotTo(gomega.HaveOccurred(), "failed build config")
 	kubeClient, err := kubernetes.NewForConfig(config)
