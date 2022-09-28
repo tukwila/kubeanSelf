@@ -1,7 +1,6 @@
 package kubean_calico_e2e
 
 import (
-	"bytes"
 	"context"
 	"fmt"
 	"os"
