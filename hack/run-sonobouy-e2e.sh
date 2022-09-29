@@ -168,5 +168,5 @@ sshpass -p root scp  -o StrictHostKeyChecking=no $(pwd)/test/tools/sonobuoy root
 cp $(pwd)/test/common/kubeanCluster.yml $(pwd)/test/kubean_calico_e2e/e2e-install-calico-cluster/
 sed -i "s/vm_ip_addr1/${vm_ip_addr1}/" $(pwd)/test/kubean_calico_e2e/e2e-install-calico-cluster/hosts-conf-cm.yml
 sed -i "s/vm_ip_addr2/${vm_ip_addr2}/" $(pwd)/test/kubean_calico_e2e/e2e-install-calico-cluster/hosts-conf-cm.yml
-sed -i "s#image:#image: ${SPRAY_JOB}#" $(pwd)/test/kubean_add_remove_worker_e2e/remove-worker-node/kubeanClusterOps.yml
+sed -i "s#image:#image: ${SPRAY_JOB}#" $(pwd)/test/kubean_calico_e2e/e2e-install-calico-cluster/kubeanClusterOps.yml
 ginkgo -v -race --fail-fast ./test/kubean_calico_e2e/  -- --kubeconfig="${MAIN_KUBECONFIG}" --vmipaddr="${vm_ip_addr1}" --vmipaddr2="${vm_ip_addr2}" 

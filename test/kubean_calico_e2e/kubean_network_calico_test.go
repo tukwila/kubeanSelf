@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
+	"runtime"
 	"strings"
 	"time"
 
@@ -17,6 +19,9 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	kubeanClusterClientSet "kubean.io/api/generated/kubeancluster/clientset/versioned"
 )
+
+var _, currentFile, _, _ = runtime.Caller(0)
+var basepath = filepath.Dir(currentFile)
 
 var _ = ginkgo.Describe("Calico single stack tunnel: IPIP_ALWAYS", func() {
 
@@ -35,14 +40,19 @@ var _ = ginkgo.Describe("Calico single stack tunnel: IPIP_ALWAYS", func() {
 		kubeanNamespace := "kubean-system"
 		kubeanClusterOpsName := "e2e-install-calico-cluster"
 
+		// fistly, apply -f CR in api/charts/_crds/
+		crdCmd := exec.Command("kubectl", "--kubeconfig="+tools.Kubeconfig, "apply", "-f", filepath.Join(basepath, "api/charts/_crds/"))
+		crdOut, _ := tools.DoCmd(*crdCmd)
+		fmt.Println(crdOut.String())
+
 		installYamlPath := fmt.Sprint(tools.GetKuBeanPath(), clusterInstallYamlsPath)
 		cmd := exec.Command("kubectl", "--kubeconfig="+tools.Kubeconfig, "apply", "-f", installYamlPath)
 		out, _ := tools.DoCmd(*cmd)
 		fmt.Println(out.String())
 
 		//apply vars-conf-cm
-		var substring = `calico_ip_auto_method: first-found  
-						calico_ip6_auto_method: first-found  
+		var substring = `calico_ip_auto_method: first-found
+						calico_ip6_auto_method: first-found
 						calico_ipip_mode: Always
 						calico_vxlan_mode: Never
 						calico_network_backend: bird
