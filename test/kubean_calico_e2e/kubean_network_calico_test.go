@@ -40,18 +40,13 @@ var _ = ginkgo.Describe("Calico single stack tunnel: IPIP_ALWAYS", func() {
 		kubeanNamespace := "kubean-system"
 		kubeanClusterOpsName := "e2e-install-calico-cluster"
 
-		// fistly, apply -f CR in api/charts/_crds/
+		installYamlPath := fmt.Sprint(tools.GetKuBeanPath(), clusterInstallYamlsPath)
+		// 1, apply -f CR in api/charts/_crds/
 		newBasePath := strings.Split(basepath, "/test/")
 		crdCmd := exec.Command("kubectl", "--kubeconfig="+tools.Kubeconfig, "apply", "-f", filepath.Join(newBasePath[0], "api/charts/_crds/"))
 		crdOut, _ := tools.DoCmd(*crdCmd)
 		fmt.Println(crdOut.String())
-
-		installYamlPath := fmt.Sprint(tools.GetKuBeanPath(), clusterInstallYamlsPath)
-		cmd := exec.Command("kubectl", "--kubeconfig="+tools.Kubeconfig, "apply", "-f", installYamlPath)
-		out, _ := tools.DoCmd(*cmd)
-		fmt.Println(out.String())
-
-		//apply vars-conf-cm
+		// 2, apply vars and hosts cm
 		var substring = `calico_ip_auto_method: first-found
 						calico_ip6_auto_method: first-found
 						calico_ipip_mode: Always
@@ -59,6 +54,17 @@ var _ = ginkgo.Describe("Calico single stack tunnel: IPIP_ALWAYS", func() {
 						calico_network_backend: bird
 						`
 		tools.CreatVarsCM(substring)
+		cmd := exec.Command("kubectl", "--kubeconfig="+tools.Kubeconfig, "apply", "-f", filepath.Join(installYamlPath, "hosts-conf-cm.yml"))
+		out, _ := tools.DoCmd(*cmd)
+		fmt.Println(out.String())
+		// 3. apply kubeancluster
+		cmd := exec.Command("kubectl", "--kubeconfig="+tools.Kubeconfig, "apply", "-f", filepath.Join(installYamlPath, "kubeanCluster.yml"))
+		out, _ := tools.DoCmd(*cmd)
+		fmt.Println(out.String())
+		// 4. apply kubeanClusterOps
+		cmd := exec.Command("kubectl", "--kubeconfig="+tools.Kubeconfig, "apply", "-f", filepath.Join(installYamlPath, "kubeanClusterOps.yml")
+		out, _ := tools.DoCmd(*cmd)
+		fmt.Println(out.String())
 
 		// Check if the job and related pods have been created
 		time.Sleep(30 * time.Second)
