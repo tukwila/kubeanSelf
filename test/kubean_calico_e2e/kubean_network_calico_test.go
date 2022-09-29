@@ -58,12 +58,12 @@ var _ = ginkgo.Describe("Calico single stack tunnel: IPIP_ALWAYS", func() {
 		out, _ := tools.DoCmd(*cmd)
 		fmt.Println(out.String())
 		// 3. apply kubeancluster
-		cmd := exec.Command("kubectl", "--kubeconfig="+tools.Kubeconfig, "apply", "-f", filepath.Join(installYamlPath, "kubeanCluster.yml"))
-		out, _ := tools.DoCmd(*cmd)
+		cmd = exec.Command("kubectl", "--kubeconfig="+tools.Kubeconfig, "apply", "-f", filepath.Join(installYamlPath, "kubeanCluster.yml"))
+		out, _ = tools.DoCmd(*cmd)
 		fmt.Println(out.String())
 		// 4. apply kubeanClusterOps
-		cmd := exec.Command("kubectl", "--kubeconfig="+tools.Kubeconfig, "apply", "-f", filepath.Join(installYamlPath, "kubeanClusterOps.yml")
-		out, _ := tools.DoCmd(*cmd)
+		cmd = exec.Command("kubectl", "--kubeconfig="+tools.Kubeconfig, "apply", "-f", filepath.Join(installYamlPath, "kubeanClusterOps.yml"))
+		out, _ = tools.DoCmd(*cmd)
 		fmt.Println(out.String())
 
 		// Check if the job and related pods have been created
