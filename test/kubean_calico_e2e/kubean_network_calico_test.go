@@ -41,7 +41,8 @@ var _ = ginkgo.Describe("Calico single stack tunnel: IPIP_ALWAYS", func() {
 		kubeanClusterOpsName := "e2e-install-calico-cluster"
 
 		// fistly, apply -f CR in api/charts/_crds/
-		crdCmd := exec.Command("kubectl", "--kubeconfig="+tools.Kubeconfig, "apply", "-f", filepath.Join(basepath, "api/charts/_crds/"))
+		newBasePath := strings.Split(basepath, "/test/")
+		crdCmd := exec.Command("kubectl", "--kubeconfig="+tools.Kubeconfig, "apply", "-f", filepath.Join(newBasePath[0], "api/charts/_crds/"))
 		crdOut, _ := tools.DoCmd(*crdCmd)
 		fmt.Println(crdOut.String())
 
