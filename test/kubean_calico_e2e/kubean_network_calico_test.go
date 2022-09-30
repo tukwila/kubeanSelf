@@ -53,17 +53,25 @@ var _ = ginkgo.Describe("Calico single stack tunnel: IPIP_ALWAYS", func() {
 						calico_vxlan_mode: Never
 						calico_network_backend: bird
 						`
-		tools.CreatVarsCM(substring)
-		cmd := exec.Command("kubectl", "--kubeconfig="+tools.Kubeconfig, "apply", "-f", filepath.Join(installYamlPath, "hosts-conf-cm.yml"))
+		// tools.CreatVarsCM(substring)
+		cmFileContent := tools.CreatVarsCMFile(substring)
+		filesaveErr := os.WriteFile(filepath.Join(installYamlPath, "vars-conf-cm.yml"), []byte(cmFileContent), 0666)
+		gomega.ExpectWithOffset(2, filesaveErr).NotTo(gomega.HaveOccurred(), "failed to write vars-conf-cm.yml")
+
+		// cmd := exec.Command("kubectl", "--kubeconfig="+tools.Kubeconfig, "apply", "-f", filepath.Join(installYamlPath, "hosts-conf-cm.yml"))
+		// out, _ := tools.DoCmd(*cmd)
+		// fmt.Println(out.String())
+		// // 3. apply kubeancluster
+		// cmd = exec.Command("kubectl", "--kubeconfig="+tools.Kubeconfig, "apply", "-f", filepath.Join(installYamlPath, "kubeanCluster.yml"))
+		// out, _ = tools.DoCmd(*cmd)
+		// fmt.Println(out.String())
+		// // 4. apply kubeanClusterOps
+		// cmd = exec.Command("kubectl", "--kubeconfig="+tools.Kubeconfig, "apply", "-f", filepath.Join(installYamlPath, "kubeanClusterOps.yml"))
+		// out, _ = tools.DoCmd(*cmd)
+		// fmt.Println(out.String())
+
+		cmd := exec.Command("kubectl", "--kubeconfig="+tools.Kubeconfig, "apply", "-f", installYamlPath)
 		out, _ := tools.DoCmd(*cmd)
-		fmt.Println(out.String())
-		// 3. apply kubeancluster
-		cmd = exec.Command("kubectl", "--kubeconfig="+tools.Kubeconfig, "apply", "-f", filepath.Join(installYamlPath, "kubeanCluster.yml"))
-		out, _ = tools.DoCmd(*cmd)
-		fmt.Println(out.String())
-		// 4. apply kubeanClusterOps
-		cmd = exec.Command("kubectl", "--kubeconfig="+tools.Kubeconfig, "apply", "-f", filepath.Join(installYamlPath, "kubeanClusterOps.yml"))
-		out, _ = tools.DoCmd(*cmd)
 		fmt.Println(out.String())
 
 		// Check if the job and related pods have been created
