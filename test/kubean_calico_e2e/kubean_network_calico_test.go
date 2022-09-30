@@ -47,12 +47,7 @@ var _ = ginkgo.Describe("Calico single stack tunnel: IPIP_ALWAYS", func() {
 		crdOut, _ := tools.DoCmd(*crdCmd)
 		fmt.Println(crdOut.String())
 		// 2, apply vars and hosts cm
-		var substring = `calico_ip_auto_method: first-found
-						calico_ip6_auto_method: first-found
-						calico_ipip_mode: Always
-						calico_vxlan_mode: Never
-						calico_network_backend: bird
-						`
+		var substring = `calico_ip_auto_method: first-found\\ncalico_ip6_auto_method: first-found\\ncalico_ipip_mode: Always\\ncalico_vxlan_mode: Never\\calico_network_backend: bird`
 		// tools.CreatVarsCM(substring)
 		cmFileContent := tools.CreatVarsCMFile(substring)
 		filesaveErr := os.WriteFile(filepath.Join(installYamlPath, "vars-conf-cm.yml"), []byte(cmFileContent), 0666)
