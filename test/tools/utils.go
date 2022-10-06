@@ -214,8 +214,7 @@ func CreatVarsCM(subStr string) {
 	}
 }
 
-var varsConfCMYml = `
-apiVersion: v1
+var varsConfCMYml = `apiVersion: v1
 kind: ConfigMap
 metadata:
   name: cluster1-vars-conf
@@ -239,12 +238,12 @@ data:
     local_path_provisioner_enabled: true
     ntp_enabled: true
 
-	kube_service_addresses: %s
-	kube_pods_subnet: %s
-	kube_network_node_prefix: %d
-
-	%s
-
+    kube_service_addresses: %s
+    kube_pods_subnet: %s
+    kube_network_node_prefix: %d
+    
+    %s
+    
     calico_cni_name: calico
     calico_felix_premetheusmetricsenabled: true
  

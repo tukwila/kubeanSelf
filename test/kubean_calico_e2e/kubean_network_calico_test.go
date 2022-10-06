@@ -47,12 +47,17 @@ var _ = ginkgo.Describe("Calico single stack tunnel: IPIP_ALWAYS", func() {
 		crdOut, _ := tools.DoCmd(*crdCmd)
 		fmt.Println(crdOut.String())
 		// 2, apply vars and hosts cm
-		var substring = `calico_ip_auto_method: first-found\\ncalico_ip6_auto_method: first-found\\ncalico_ipip_mode: Always\\ncalico_vxlan_mode: Never\\calico_network_backend: bird`
-		// tools.CreatVarsCM(substring)
+		var substring = "calico_ip_auto_method: first-found\n    calico_ip6_auto_method: first-found\n    calico_ipip_mode: Always\n    calico_vxlan_mode: Never\n    calico_network_backend: bird"
+		// OR: another assign method
+		// var substring = `calico_ip_auto_method: first-found
+		//   calico_ip6_auto_method: first-found
+		//   calico_ipip_mode: Always
+		//   calico_vxlan_mode: Never
+		//   calico_network_backend: bird`
 		cmFileContent := tools.CreatVarsCMFile(substring)
 		filesaveErr := os.WriteFile(filepath.Join(installYamlPath, "vars-conf-cm.yml"), []byte(cmFileContent), 0666)
 		gomega.ExpectWithOffset(2, filesaveErr).NotTo(gomega.HaveOccurred(), "failed to write vars-conf-cm.yml")
-
+		// tools.CreatVarsCM(substring)
 		// cmd := exec.Command("kubectl", "--kubeconfig="+tools.Kubeconfig, "apply", "-f", filepath.Join(installYamlPath, "hosts-conf-cm.yml"))
 		// out, _ := tools.DoCmd(*cmd)
 		// fmt.Println(out.String())
