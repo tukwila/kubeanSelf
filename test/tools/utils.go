@@ -280,6 +280,6 @@ data:
 
 func CreatVarsCMFile(subStr string) string {
 
-	var groupVarsYamlString = fmt.Sprintf(varsConfCMYml, "1.23.7", "calico", "10.96.0.0/12", "192.168.128.0/20", 24, subStr)
+	var groupVarsYamlString = fmt.Sprintf(varsConfCMYml, "v1.23.7", "calico", "10.96.0.0/12", "192.168.128.0/20", 24, subStr)
 	return groupVarsYamlString
 }
