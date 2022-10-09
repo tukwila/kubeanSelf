@@ -57,6 +57,7 @@ var _ = ginkgo.Describe("Calico single stack tunnel: IPIP_ALWAYS", func() {
 		cmFileContent := tools.CreatVarsCMFile(substring)
 		filesaveErr := os.WriteFile(filepath.Join(installYamlPath, "vars-conf-cm.yml"), []byte(cmFileContent), 0666)
 		gomega.ExpectWithOffset(2, filesaveErr).NotTo(gomega.HaveOccurred(), "failed to write vars-conf-cm.yml")
+		// OR: another way to apply kubean job
 		// tools.CreatVarsCM(substring)
 		// cmd := exec.Command("kubectl", "--kubeconfig="+tools.Kubeconfig, "apply", "-f", filepath.Join(installYamlPath, "hosts-conf-cm.yml"))
 		// out, _ := tools.DoCmd(*cmd)
@@ -145,6 +146,24 @@ var _ = ginkgo.Describe("Calico single stack tunnel: IPIP_ALWAYS", func() {
 		}
 
 		//7. check tunnel valid
+		ginkgo.Context("check calico tunnel valid", func() {
+			poolCmd := tools.RemoteSSHCmdArray([]string{masterSSH, "calicoctl", "get", "ippools", "--output=go-template=\"{{range .}}{{range .Items}}{{.ObjectMeta.Name}}{{end}}{{end}}\""})
+			poolName, _ := tools.NewDoCmd("sshpass", poolCmd...)
+			fmt.Println("check poolName: ", poolName.String())
+
+			ipmodeCmd := tools.RemoteSSHCmdArray([]string{masterSSH, "calicoctl", "get", "ippools", poolName.String(), "--output=custom-columns=IPIPMODE"})
+			ipmodeCmdOut, _ := tools.NewDoCmd("sshpass", ipmodeCmd...)
+			fmt.Println("check IPIPMODE: ", ipmodeCmdOut.String())
+			ginkgo.It("check IPIPMODE succuss: ", func() {
+				gomega.Expect(ipmodeCmdOut.String()).Should(gomega.ContainSubstring("Always"))
+			})
+			vxmodeCmd := tools.RemoteSSHCmdArray([]string{masterSSH, "calicoctl", "get", "ippools", poolName.String(), "--output=custom-columns=VXLANMODE"})
+			vxmodeCmdOut, _ := tools.NewDoCmd("sshpass", vxmodeCmd...)
+			fmt.Println("check VXLANMODE: ", vxmodeCmdOut.String())
+			ginkgo.It("check VXLANMODE succuss: ", func() {
+				gomega.Expect(vxmodeCmdOut.String()).Should(gomega.ContainSubstring("Never"))
+			})
+		})
 
 		//8. check pod connection
 		config, err = clientcmd.BuildConfigFromFlags("", localKubeConfigPath)
