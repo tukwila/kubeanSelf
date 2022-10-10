@@ -312,7 +312,7 @@ data:
     container_manager: docker
     docker_insecure_registries:
     #  "10.6.170.10:5000": "http://10.6.170.10:5000"
-	  - 10.6.170.10:5000
+      - 10.6.170.10:5000
     k8s_image_pull_policy: IfNotPresent
     kube_network_plugin: %s
     kube_network_plugin_multus: false
