@@ -47,5 +47,5 @@ jobs:
 
       - name: e2e
         run: |
-          bash hack/sonobouy_e2e.sh "v0.2.6" "v0.2.6" "https://kubean-io.github.io/kubean-helm-chart/" "ghcr.io/kubean-io" "v0.2.2" ${{ runner.name }}
+          bash hack/sonobouy_e2e.sh "v0.2.6" "v0.2.6" "https://kubean-io.github.io/kubean-helm-chart/" "ghcr.io/kubean-io" "v0.2.6" ${{ runner.name }}
           #echo "hello"

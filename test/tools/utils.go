@@ -293,6 +293,7 @@ var internalSource = `# offline
     runc_download_url: "{{ files_repo }}/github.com/opencontainers/runc/releases/download/{{ runc_version }}/runc.{{ image_arch }}"
     containerd_download_url: "{{ files_repo }}/github.com/containerd/containerd/releases/download/v{{ containerd_version }}/containerd-{{ containerd_version }}-linux-{{ image_arch }}.tar.gz"
     nerdctl_download_url: "{{ files_repo }}/github.com/containerd/nerdctl/releases/download/v{{ nerdctl_version }}/nerdctl-{{ nerdctl_version }}-{{ ansible_system | lower }}-{{ image_arch }}.tar.gz"
+	cri_dockerd_download_url: "{{ files_repo }}/github.com/Mirantis/cri-dockerd/releases/download/v{{ cri_dockerd_version }}/cri-dockerd-{{ cri_dockerd_version }}.{{ image_arch }}.tgz"
 `
 
 var kubeServiceAddresses = "10.96.0.0/12"
@@ -307,9 +308,10 @@ data:
   group_vars.yml: |
     # k8s-cluster
     kube_version: "%s"
-    container_manager: containerd
-    containerd_insecure_registries:
-      "10.6.170.10:5000": "http://10.6.170.10:5000"
+    container_manager: docker
+    docker_insecure_registries:
+    #  "10.6.170.10:5000": "http://10.6.170.10:5000"
+	  - 10.6.170.10:5000
     k8s_image_pull_policy: IfNotPresent
     kube_network_plugin: %s
     kube_network_plugin_multus: false
