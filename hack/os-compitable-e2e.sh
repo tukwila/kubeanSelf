@@ -4,11 +4,6 @@ set -o pipefail
 set -e
 set -x
 
-####################################
-# Function Definition
-###################################
-{{ template "e2e.sh" .}}
-
 TARGET_VERSION=${1:-v0.0.0}
 IMAGE_VERSION=${2:-latest}
 HELM_REPO=${3:-"https://kubean-io.github.io/kubean-helm-chart"}
@@ -18,6 +13,8 @@ RUNNER_NAME=${6:-"kubean-actions-runner1"}
 EXIT_CODE=0
 
 CLUSTER_PREFIX=kubean-"${IMAGE_VERSION}"-$RANDOM
+REPO_ROOT=$(dirname "${BASH_SOURCE[0]}")/..
+source "${REPO_ROOT}"/hack/e2e.sh
 
 local_helm_repo_alias="kubean_release"
 # add kubean repo locally
