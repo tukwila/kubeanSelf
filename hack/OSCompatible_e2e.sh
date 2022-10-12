@@ -40,6 +40,19 @@ vm_clean_up(){
     exit $EXIT_CODE
 }
 
+install_sshpass(){
+    local CMD=$(command -v ${1})
+    if [[ ! -x ${CMD} ]]; then
+        echo "Installing sshpass: "
+        wget http://sourceforge.net/projects/sshpass/files/sshpass/1.05/sshpass-1.05.tar.gz
+        tar xvzf sshpass-1.05.tar.gz
+        cd sshpass-1.05.tar.gz
+        ./configure
+        make
+        make install
+    fi
+}
+
 os_compitable_e2e(){
     KUBECONFIG_PATH=${KUBECONFIG_PATH:-"${HOME}/.kube"}
     HOST_CLUSTER_NAME=${1:-"kubean-host"}
@@ -77,6 +90,7 @@ os_compitable_e2e(){
 trap utils::clean_up EXIT
 ./hack/local-up-kindcluster.sh "${TARGET_VERSION}" "${IMAGE_VERSION}" "${HELM_REPO}" "${IMG_REPO}" "kindest/node:v1.21.1" "${CLUSTER_PREFIX}"-host
 utils:runner_ip
+install_sshpass
 os_compitable_e2e
 
 ret=$?
