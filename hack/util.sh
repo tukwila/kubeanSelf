@@ -342,19 +342,19 @@ function utils::create_os_e2e_vms(){
         rm -f $(pwd)/Vagrantfile
     fi
     cp $(pwd)/hack/os_vagrantfiles/${1} $(pwd)/Vagrantfile
-    sed -i "s/sonobouyDefault_ip/${vm_ip_addr1}/" Vagrantfile
-    sed -i "s/sonobouyDefault2_ip/${vm_ip_addr2}/" Vagrantfile
+    sed -i "s/sonobouyDefault_ip/${2}/" Vagrantfile
+    sed -i "s/sonobouyDefault2_ip/${3}/" Vagrantfile
     vagrant up
     vagrant status
     ATTEMPTS=0
     pingOK=0
-    ping -w 2 -c 1 $vm_ip_addr1|grep "0%" && pingOK=true || pingOK=false
+    ping -w 2 -c 1 $2|grep "0%" && pingOK=true || pingOK=false
     until [ "${pingOK}" == "true" ] || [ $ATTEMPTS -eq 10 ]; do
-    ping -w 2 -c 1 $vm_ip_addr1|grep "0%" && pingOK=true || pingOK=false
-    echo "==> ping "$vm_ip_addr1 $pingOK
+    ping -w 2 -c 1 $2|grep "0%" && pingOK=true || pingOK=false
+    echo "==> ping "$2 $pingOK
     ATTEMPTS=$((ATTEMPTS + 1))
     sleep 10
     done
-    ping -c 5 ${vm_ip_addr1}
-    ping -c 5 ${vm_ip_addr2}
+    ping -c 5 ${2}
+    ping -c 5 ${3}
 }

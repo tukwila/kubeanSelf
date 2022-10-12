@@ -49,7 +49,8 @@ install_sshpass(){
 
 os_compitable_e2e(){
     KUBECONFIG_PATH=${KUBECONFIG_PATH:-"${HOME}/.kube"}
-    HOST_CLUSTER_NAME=${1:-"kubean-host"}
+    HOST_CLUSTER_NAME="${CLUSTER_PREFIX}"-host
+    vagrantfile=${1}
     #SPRAY_JOB_VERSION=${2:-latest}
     #vm_ip_addr=${3:-"10.6.127.33"}
     MAIN_KUBECONFIG=${MAIN_KUBECONFIG:-"${KUBECONFIG_PATH}/${HOST_CLUSTER_NAME}.config"}
@@ -61,19 +62,19 @@ os_compitable_e2e(){
 
     trap vm_clean_up EXIT
     #prepare master vm
-    utils::create_os_e2e_vms Vagrantfile_rhel84
+    utils::create_os_e2e_vms vagrantfile vm_ip_addr1 vm_ip_addr2
     vagrant up
     vagrant status
     ping -c 5 ${vm_ip_addr1}
     sshpass -p root ssh -o StrictHostKeyChecking=no  root@${vm_ip_addr1} cat /proc/version
     # prepare kubean install job yml using containerd
     SPRAY_JOB="ghcr.io/kubean-io/spray-job:${SPRAY_JOB_VERSION}"
-    cp $(pwd)/test/common/hosts-conf-cm.yml $(pwd)/test/kubean_oscompitable_e2e/e2e-install-cluster/
     cp $(pwd)/test/common/kubeanCluster.yml $(pwd)/test/kubean_oscompitable_e2e/e2e-install-cluster/
     cp $(pwd)/test/common/vars-conf-cm.yml $(pwd)/test/kubean_oscompitable_e2e/e2e-install-cluster/
-    sed -i "s/ip:/ip: ${vm_ip_addr}/" $(pwd)/test/kubean_oscompitable_e2e/e2e-install-cluster/hosts-conf-cm.yml
-    sed -i "s/ansible_host:/ansible_host: ${vm_ip_addr}/" $(pwd)/test/kubean_oscompitable_e2e/e2e-install-cluster/hosts-conf-cm.yml
+    sed -i "s/vm_ip_addr1/${vm_ip_addr1}/" $(pwd)/test/kubean_oscompitable_e2e/e2e-install-cluster/hosts-conf-cm.yml
+    sed -i "s/vm_ip_addr2/${vm_ip_addr2}/" $(pwd)/test/kubean_oscompitable_e2e/e2e-install-cluster/hosts-conf-cm.yml
     sed -i "s#image:#image: ${SPRAY_JOB}#" $(pwd)/test/kubean_oscompitable_e2e/e2e-install-cluster/kubeanClusterOps.yml
+
     # Run cluster function e2e
     ginkgo -v -race --fail-fast ./test/kubean_oscompitable_e2e/  -- --kubeconfig="${MAIN_KUBECONFIG}"
 }
@@ -84,7 +85,11 @@ trap utils::clean_up EXIT
 ./hack/local-up-kindcluster.sh "${TARGET_VERSION}" "${IMAGE_VERSION}" "${HELM_REPO}" "${IMG_REPO}" "kindest/node:v1.21.1" "${CLUSTER_PREFIX}"-host
 utils:runner_ip
 install_sshpass
-os_compitable_e2e
+os_array=("Vagrantfile_rhel84")
+for (( i=0; i<${#os_array[@]};i++));
+do
+os_compitable_e2e ${os_array[$i]}
+done
 
 ret=$?
 if [ ${ret} -ne 0 ]; then
