@@ -31,7 +31,6 @@ var _ = ginkgo.Describe("Calico single stack tunnel: IPIP_ALWAYS", func() {
 	gomega.ExpectWithOffset(2, err).NotTo(gomega.HaveOccurred(), "failed new client set")
 	localKubeConfigPath := "calico-single-stack.config"
 	var masterSSH = fmt.Sprintf("root@%s", tools.Vmipaddr)
-	//var workerSSH = fmt.Sprintf("root@%s", tools.Vmipaddr2)
 
 	defer ginkgo.GinkgoRecover()
 

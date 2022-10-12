@@ -40,7 +40,7 @@ chmod +x ./hack/run-sonobouy-e2e.sh
 ###### Clean Up #######
 echo "======= cluster prefix: ${CLUSTER_PREFIX}"
 
-clean_up(){
+function utils::clean_up(){
     local auto_cleanup="true"
     if [ "$auto_cleanup" == "true" ];then
         ./hack/delete-cluster.sh "${CLUSTER_PREFIX}"-host
@@ -52,31 +52,35 @@ clean_up(){
 }
 
 ###### to get k8 cluster single node ip address based on actions-runner #######
-echo "RUNNER_NAME: "$RUNNER_NAME
-if [ "${RUNNER_NAME}" == "kubean-actions-runner1" ]; then
-    vm_ip_addr1="10.6.127.33"
-    vm_ip_addr2="10.6.127.36"
-fi
-if [ "${RUNNER_NAME}" == "kubean-actions-runner2" ]; then
-    vm_ip_addr1="10.6.127.35"
-    vm_ip_addr2="10.6.127.37"
-fi
-if [ "${RUNNER_NAME}" == "kubean-actions-runner3" ]; then
-    vm_ip_addr1="10.6.127.39"
-    vm_ip_addr2="10.6.127.40"
-fi
-if [ "${RUNNER_NAME}" == "kubean-actions-runner4" ]; then
-    vm_ip_addr1="10.6.127.42"
-    vm_ip_addr2="10.6.127.43"
-fi
-if [ "${RUNNER_NAME}" == "debug" ]; then
-    vm_ip_addr1="10.6.127.45"
-    vm_ip_addr2="10.6.127.46"
-fi
+function utils:runner_ip(){
+    echo "RUNNER_NAME: "$RUNNER_NAME
+    if [ "${RUNNER_NAME}" == "kubean-actions-runner1" ]; then
+        vm_ip_addr1="10.6.127.33"
+        vm_ip_addr2="10.6.127.36"
+    fi
+    if [ "${RUNNER_NAME}" == "kubean-actions-runner2" ]; then
+        vm_ip_addr1="10.6.127.35"
+        vm_ip_addr2="10.6.127.37"
+    fi
+    if [ "${RUNNER_NAME}" == "kubean-actions-runner3" ]; then
+        vm_ip_addr1="10.6.127.39"
+        vm_ip_addr2="10.6.127.40"
+    fi
+    if [ "${RUNNER_NAME}" == "kubean-actions-runner4" ]; then
+        vm_ip_addr1="10.6.127.42"
+        vm_ip_addr2="10.6.127.43"
+    fi
+    if [ "${RUNNER_NAME}" == "debug" ]; then
+        vm_ip_addr1="10.6.127.45"
+        vm_ip_addr2="10.6.127.46"
+    fi
+}
+
 
 ###### e2e logic ########
-trap clean_up EXIT
+trap utils::clean_up EXIT
 ./hack/local-up-kindcluster.sh "${TARGET_VERSION}" "${IMAGE_VERSION}" "${HELM_REPO}" "${IMG_REPO}" "kindest/node:v1.21.1" "${CLUSTER_PREFIX}"-host
+utils:runner_ip
 ./hack/run-e2e.sh "${CLUSTER_PREFIX}"-host $SPRAY_JOB_VERSION $vm_ip_addr1
 
 ret=$?
