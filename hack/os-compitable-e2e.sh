@@ -43,7 +43,8 @@ install_sshpass(){
         cd sshpass-1.05
         ./configure
         make
-        sudo make install
+        echo "root" | sudo make install
+        cd ..
     fi
 }
 
