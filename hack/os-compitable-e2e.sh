@@ -1,8 +1,5 @@
-#!/usr/bin/env bash
-set -o nounset
-set -o pipefail
+#!/bin/bash -ex
 set -e
-set -x
 
 TARGET_VERSION=${1:-v0.0.0}
 IMAGE_VERSION=${2:-latest}
@@ -14,7 +11,7 @@ EXIT_CODE=0
 
 CLUSTER_PREFIX=kubean-"${IMAGE_VERSION}"-$RANDOM
 REPO_ROOT=$(dirname "${BASH_SOURCE[0]}")/..
-source "${REPO_ROOT}"/hack/e2e.sh
+source "${REPO_ROOT}"/hack/util.sh
 
 local_helm_repo_alias="kubean_release"
 # add kubean repo locally
@@ -43,10 +40,10 @@ install_sshpass(){
         echo "Installing sshpass: "
         wget http://sourceforge.net/projects/sshpass/files/sshpass/1.05/sshpass-1.05.tar.gz
         tar xvzf sshpass-1.05.tar.gz
-        cd sshpass-1.05.tar.gz
+        cd sshpass-1.05
         ./configure
         make
-        make install
+        sudo make install
     fi
 }
 
@@ -64,8 +61,7 @@ os_compitable_e2e(){
 
     trap vm_clean_up EXIT
     #prepare master vm
-    vagrant init Kiowa/kkubean-redhat84 --box-version 0
-    sed -i "$ i\  config.vm.network \"public_network\", ip: \"${vm_ip_addr1}\", bridge: \"ens192\"" Vagrantfile
+    utils::create_os_e2e_vms Vagrantfile_rhel84
     vagrant up
     vagrant status
     ping -c 5 ${vm_ip_addr1}
