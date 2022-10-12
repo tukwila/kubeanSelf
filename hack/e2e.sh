@@ -74,7 +74,7 @@ function utils:runner_ip(){
         vm_ip_addr1="10.6.127.45"
         vm_ip_addr2="10.6.127.46"
     fi
-    return 1
+    return $EXIT_CODE
 }
 
 
