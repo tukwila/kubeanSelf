@@ -341,7 +341,7 @@ function utils::create_os_e2e_vms(){
     if [ -f $(pwd)/Vagrantfile ]; then
         rm -f $(pwd)/Vagrantfile
     fi
-    cp $(pwd)/hack/os_vagrantfiles/${1} $(pwd)/Vagrantfile
+    cp $(pwd)/hack/os_vagrantfiles/"${1}" $(pwd)/Vagrantfile
     sed -i "s/sonobouyDefault_ip/${2}/" Vagrantfile
     sed -i "s/sonobouyDefault2_ip/${3}/" Vagrantfile
     vagrant up

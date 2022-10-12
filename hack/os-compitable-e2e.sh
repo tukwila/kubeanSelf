@@ -63,11 +63,7 @@ os_compitable_e2e(){
 
     trap vm_clean_up EXIT
     #prepare master vm
-    utils::create_os_e2e_vms vagrantfile vm_ip_addr1 vm_ip_addr2
-    vagrant up
-    vagrant status
-    ping -c 5 ${vm_ip_addr1}
-    sshpass -p root ssh -o StrictHostKeyChecking=no  root@${vm_ip_addr1} cat /proc/version
+    utils::create_os_e2e_vms $vagrantfile $vm_ip_addr1 $vm_ip_addr2
     # prepare kubean install job yml using containerd
     SPRAY_JOB="ghcr.io/kubean-io/spray-job:${SPRAY_JOB_VERSION}"
     cp $(pwd)/test/common/kubeanCluster.yml $(pwd)/test/kubean_oscompitable_e2e/e2e-install-cluster/
