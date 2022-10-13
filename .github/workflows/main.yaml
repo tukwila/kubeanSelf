@@ -29,7 +29,7 @@ jobs:
       - name: e2e
         run: |
           echo "hello"
-          bash hack/os-compitable-e2e.sh "v0.2.6" "v0.2.6" "https://kubean-io.github.io/kubean-helm-chart/" "ghcr.io/kubean-io" "v0.2.6" ${{ runner.name }}
+          bash hack/e2e.sh "v0.2.7" "v0.2.7" "https://kubean-io.github.io/kubean-helm-chart/" "ghcr.io/kubean-io" "v0.2.7" ${{ runner.name }}
   sonobouy_e2e:
     needs: e2e
     runs-on: self-hosted

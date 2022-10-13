@@ -66,10 +66,10 @@ os_compitable_e2e(){
     SPRAY_JOB="ghcr.io/kubean-io/spray-job:${SPRAY_JOB_VERSION}"
     cp $(pwd)/test/common/kubeanCluster.yml $(pwd)/test/kubean_oscompitable_e2e/e2e-install-cluster/
     cp $(pwd)/test/common/vars-conf-cm.yml $(pwd)/test/kubean_oscompitable_e2e/e2e-install-cluster/
+    cp $(pwd)/test/kubean_functions_e2e/e2e-install-cluster/kubeanClusterOps.yml $(pwd)/test/kubean_oscompitable_e2e/e2e-install-cluster/
     sed -i "s/vm_ip_addr1/${vm_ip_addr1}/" $(pwd)/test/kubean_oscompitable_e2e/e2e-install-cluster/hosts-conf-cm.yml
     sed -i "s/vm_ip_addr2/${vm_ip_addr2}/" $(pwd)/test/kubean_oscompitable_e2e/e2e-install-cluster/hosts-conf-cm.yml
     sed -i "s#image:#image: ${SPRAY_JOB}#" $(pwd)/test/kubean_oscompitable_e2e/e2e-install-cluster/kubeanClusterOps.yml
-
     # Run cluster function e2e
     ginkgo -v -race --fail-fast ./test/kubean_oscompitable_e2e/  -- --kubeconfig="${MAIN_KUBECONFIG}"
 }
@@ -84,6 +84,8 @@ os_array=("Vagrantfile_rhel84")
 for (( i=0; i<${#os_array[@]};i++));
 do
 os_compitable_e2e ${os_array[$i]}
+vagrant destroy -f sonobouyDefault
+vagrant destroy -f sonobouyDefault2
 done
 
 ret=$?
