@@ -52,8 +52,6 @@ os_compitable_e2e(){
     KUBECONFIG_PATH=${KUBECONFIG_PATH:-"${HOME}/.kube"}
     HOST_CLUSTER_NAME="${CLUSTER_PREFIX}"-host
     vagrantfile=${1}
-    #SPRAY_JOB_VERSION=${2:-latest}
-    #vm_ip_addr=${3:-"10.6.127.33"}
     MAIN_KUBECONFIG=${MAIN_KUBECONFIG:-"${KUBECONFIG_PATH}/${HOST_CLUSTER_NAME}.config"}
     EXIT_CODE=0
     echo "currnent dir: "$(pwd)
