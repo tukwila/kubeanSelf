@@ -19,6 +19,8 @@ RUNNER_NAME=${6:-"kubean-actions-runner1"}
 EXIT_CODE=0
 
 CLUSTER_PREFIX=kubean-"${IMAGE_VERSION}"-$RANDOM
+REPO_ROOT=$(dirname "${BASH_SOURCE[0]}")/..
+source "${REPO_ROOT}"/hack/util.sh
 
 local_helm_repo_alias="kubean_release"
 # add kubean repo locally
