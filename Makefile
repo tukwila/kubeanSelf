@@ -24,7 +24,7 @@ KUBEAN_CHART_VERSION := $(shell echo ${KUBEAN_VERSION} |sed  's/^v//g' )
 REGISTRY_SERVER_ADDRESS?=container.io
 REGISTRY_REPO?=$(REGISTRY_SERVER_ADDRESS)/kubean-ci
 
-SPRAY_TAG?="master"
+SPRAY_TAG?="latest"
 
 
 .PHONY: test
@@ -60,7 +60,7 @@ spray-job: $(SOURCES)
 	export DOCKER_CLI_EXPERIMENTAL=enabled ;\
 	! ( docker buildx ls | grep spray-job-multi-platform-builder ) && docker buildx create --use --platform=$(BUILD_ARCH) --name spray-job-multi-platform-builder ;\
 	docker buildx build \
-			--build-arg spray_tag=$(SPRAY_TAG) \
+			--build-arg SPRAY_TAG=$(SPRAY_TAG) \
 			--builder spray-job-multi-platform-builder \
 			--platform $(BUILD_ARCH) \
 			--tag $(REGISTRY_REPO)/spray-job:$(KUBEAN_IMAGE_VERSION)  \
@@ -77,3 +77,11 @@ GIT_VERSION ?= $(shell git describe --tags --abbrev=8)
 .PHONY: local-chart-to-deploy
 local-chart-to-deploy:
 	bash hack/local-chart-to-deploy.sh ${IMAGE_REPO} ${RELEASE_NAME} ${TARGET_NS} ${KUBECONFIG_PATH} ${GIT_VERSION}
+
+
+.PHONY: security-scanning
+security-scanning:
+	bash hack/trivy.sh \
+	${REGISTRY}/${REPO}/spray-job:${IMAGE_TAG} \
+	${REGISTRY}/${REPO}/kubean-operator:${IMAGE_TAG} \
+	${REGISTRY}/${REPO}/kubespray:${SPRAY_IMAGE_TAG_SHORT_SHA}

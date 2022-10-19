@@ -1,8 +1,10 @@
 # :seedling: KuBean
 [![main workflow](https://github.com/kubean-io/kubean/actions/workflows/auto-main-ci.yaml/badge.svg)](https://github.com/kubean-io/kubean/actions/workflows/auto-main-ci.yaml) [![codecov](https://codecov.io/gh/kubean-io/kubean/branch/main/graph/badge.svg?token=8FX807D3QQ)](https://codecov.io/gh/kubean-io/kubean) [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/6263/badge)](https://bestpractices.coreinfrastructure.org/projects/6263)
 [![kubean coverage](https://raw.githubusercontent.com/dasu23/e2ecoverage/master/badges/kubean/kubeanCoverage.svg)](https://github.com/kubean-io/kubean/blob/main/doc/test/kubean_testcase.md) [![kubean coverage](https://raw.githubusercontent.com/dasu23/e2ecoverage/master/badges/kubean/kubeanCoverage2.svg)](https://github.com/kubean-io/kubean/blob/main/doc/test/kubean_testcase.md)
+
 # Introduction
-kubean is a cluster lifecycle management tool based on kubespray.
+
+kubean is a cluster lifecycle management tool based on [kubespray](https://github.com/kubernetes-sigs/kubespray).
 
 # Quick Start
 
@@ -15,7 +17,7 @@ helm install kubean kubean-io/kubean --create-namespace -n kubean-system
 
 Then check kubean-operator status by `kubectl get pods -n kubean-system | grep 'kubean'`.
 
-## Start KuBeanClusterOps for cluster.yml playbook
+## Start ClusterOperation for cluster.yml playbook
 
 We cloud use the example in folder `artifacts/demo` which uses online resources to install k8s cluster.
 

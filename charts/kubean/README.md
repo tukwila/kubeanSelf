@@ -41,23 +41,29 @@ $ helm install kubean kubean-io/kubean --create-namespace -n kubean-system
 
 View cluster information.
 ``` bash
-$ kubectl get kubeancluster
+$ kubectl get clusters.kubean.io
 ```
 
 View cluster operation jobs.
 ``` bash
-$ kubectl get kubeanclusterops
+$ kubectl get clusteroperations.kubean.io
 ```
 
 ## Uninstall
 
 If kubean's related custom resources already exist, you need to clear.
 ``` bash
-$ kubectl delete kubeanclusterops --all
-$ kubectl delete kubeancluster --all
+$ kubectl delete clusteroperations.kubean.io --all
+$ kubectl delete clusters.kubean.io --all
+$ kubectl delete manifests.kubean.io --all
+$ kubectl delete localartifactsets.kubean.io --all
 ```
 
 Uninstall kubean's components via helm.
 ``` bash
 $ helm -n kubean-system uninstall kubean
+$ kubectl delete crd clusteroperations.kubean.io
+$ kubectl delete crd clusters.kubean.io
+$ kubectl delete crd manifests.kubean.io
+$ kubectl delete crd localartifactsets.kubean.io
 ```

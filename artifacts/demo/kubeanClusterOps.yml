@@ -1,11 +1,11 @@
 apiVersion: kubean.io/v1alpha1
-kind: KuBeanClusterOps
+kind: ClusterOperation
 metadata:
   name: cluster1-demo-ops-1
   labels:
     clusterName: cluster1-demo
 spec:
-  kuBeanCluster: cluster1-demo
+  cluster: cluster1-demo
   image: ghcr.io/kubean-io/spray-job:latest # or change image to kubespray origin image version
   backoffLimit: 0
   actionType: playbook
@@ -16,5 +16,7 @@ spec:
     - actionType: playbook
       action: disable-firewalld.yml
   postHook:
+    - actionType: playbook
+      action: kubeconfig.yml
     - actionType: playbook
       action: cluster-info.yml

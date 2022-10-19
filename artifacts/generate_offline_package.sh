@@ -6,7 +6,8 @@ OPTION=${1:-'all'}
 KUBEAN_TAG=${KUBEAN_TAG:-"v0.1.0"}
 
 CURRENT_DIR=$(pwd)
-OFFLINE_PACKAGE_DIR=${CURRENT_DIR}/${KUBEAN_TAG}
+ARCH=${ARCH:-"amd64"}
+OFFLINE_PACKAGE_DIR=${CURRENT_DIR}/${KUBEAN_TAG}/${ARCH}
 OFFLINE_FILES_DIR=${OFFLINE_PACKAGE_DIR}/files
 OFFLINE_IMAGES_DIR=${OFFLINE_PACKAGE_DIR}/images
 OFFLINE_OSPKGS_DIR=${OFFLINE_PACKAGE_DIR}/os-pkgs
@@ -24,11 +25,12 @@ function generate_temp_list() {
   fi
   echo "$CURRENT_DIR/kubespray"
   cd $CURRENT_DIR/kubespray
-  bash contrib/offline/generate_list.sh
+  bash contrib/offline/generate_list.sh -e"image_arch=${ARCH}"
 
   # Clean up unused images
+  remove_images="aws-alb|aws-ebs|cert-manager|netchecker|weave|sig-storage|external_storage|cinder-csi|kubernetesui|flannel"
   mv contrib/offline/temp/images.list contrib/offline/temp/images.list.old
-  cat contrib/offline/temp/images.list.old | egrep -v 'aws-alb|aws-ebs|cert-manager|netchecker|weave' > contrib/offline/temp/images.list
+  cat contrib/offline/temp/images.list.old | egrep -v ${remove_images} > contrib/offline/temp/images.list
 
   cp contrib/offline/temp/*.list $OFFLINE_PACKAGE_DIR
 }
@@ -52,19 +54,20 @@ function create_images() {
   IMG_LIST=$CURRENT_DIR/kubespray/contrib/offline/temp/images.list
 
   echo "begin to download images"
+  images_list_content=$(cat "$IMG_LIST")
 
   if [ ! -d "offline-images" ]; then
     echo "create dir offline-images"
     mkdir offline-images
   fi
 
-  while read image_name; do
+  while read -r image_name; do
     ## quay.io/metallb/controller:v0.12.1 => dir:somedir/metallb%controller:v0.12.1
     new_dir_name=${image_name#*/}     ## remote host
     new_dir_name=${new_dir_name//\//%} ## replace all / with %
     echo "download image $image_name to local $new_dir_name"
-    skopeo copy --retry-times=3 --override-os linux --override-arch amd64 docker://"$image_name" dir:offline-images/"$new_dir_name"
-  done <"$IMG_LIST"
+    skopeo copy --insecure-policy --retry-times=3 --override-os linux --override-arch ${ARCH} docker://"$image_name" dir:offline-images/"$new_dir_name"
+  done <<< "$images_list_content"
 
   tar -czvf $OFFLINE_IMAGES_DIR/offline-images.tar.gz offline-images
 
@@ -88,6 +91,14 @@ all)
 
 list)
   generate_temp_list
+  ;;
+
+offline_dir)
+  generate_offline_dir
+  ;;
+
+copy_import_sh)
+  copy_import_sh
   ;;
 
 files)
